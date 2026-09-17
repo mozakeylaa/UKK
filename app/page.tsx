@@ -1,69 +1,136 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Search, CalendarCheck, DoorOpen, ArrowRight } from "lucide-react";
+import Button from "@/components/ui/Button";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-white">
+      {/* Hero */}
+      <div className="bg-navy-gradient">
+        <header className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-6 sm:px-10 lg:px-16">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 font-display text-sm font-bold text-white ring-1 ring-white/20">
+              CW
+            </div>
+            <span className="font-display text-lg font-semibold text-white">Co-Work</span>
+          </div>
+          <Link href="/login">
+            <Button
+              size="sm"
+              className="!border !border-white/20 !bg-white/10 !text-white hover:!bg-white/20"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+              Masuk
+            </Button>
+          </Link>
+        </header>
+
+        <section className="mx-auto grid max-w-[1440px] items-center gap-12 px-6 pb-24 pt-10 sm:px-10 md:grid-cols-[1.1fr_0.9fr] md:pb-32 md:pt-16 lg:px-16">
+          <div
+            className="opacity-0"
+            style={{ animation: "fadeUp 0.7s ease 0.05s forwards" }}
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <h1 className="font-display text-4xl font-bold leading-[1.1] text-white md:text-5xl">
+              Ruang kerja yang siap, tepat saat kamu butuh.
+            </h1>
+            <p className="mt-5 max-w-md text-base leading-relaxed text-blue-100/80 md:text-lg">
+              Cari desk, meeting room, atau private office di sekitarmu, cek
+              jadwalnya, lalu pesan dalam hitungan menit — tanpa telepon,
+              tanpa nunggu konfirmasi manual.
+            </p>
+            <Link href="/login" className="mt-8 inline-block">
+              <Button size="lg" className="gap-2 !bg-white !text-navy-900 hover:!bg-blue-50">
+                Mulai Booking
+                <ArrowRight size={18} />
+              </Button>
+            </Link>
+          </div>
+
+          {/* Product mockup card — grounded in real booking data, not decoration */}
+          <div
+            className="relative opacity-0"
+            style={{ animation: "fadeUp 0.7s ease 0.2s forwards" }}
           >
-            Documentation
-          </a>
+            <div className="mx-auto w-full max-w-sm rotate-2 rounded-2xl bg-white p-5 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <p className="font-display text-sm font-semibold text-ink-950">
+                  Meeting Room A
+                </p>
+                <span className="flex items-center gap-1.5 rounded-full bg-status-active/10 px-2.5 py-1 text-xs font-medium text-status-active">
+                  <span className="h-1.5 w-1.5 rounded-full bg-status-active" />
+                  Disetujui
+                </span>
+              </div>
+              <div className="mt-4 space-y-2 text-sm text-ink-600">
+                <div className="flex justify-between">
+                  <span>Tanggal</span>
+                  <span className="font-medium text-ink-950">18 Sep 2026</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Jam</span>
+                  <span className="font-medium text-ink-950">13:00 – 15:00</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Kapasitas</span>
+                  <span className="font-medium text-ink-950">8 orang</span>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between border-t border-surface-200 pt-4">
+                <span className="text-sm text-ink-600">Total</span>
+                <span className="font-display text-base font-semibold text-ink-950">
+                  Rp 200.000
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Cara kerja — sequence asli, jadi penomoran di sini bermakna */}
+      <section className="mx-auto max-w-[1200px] px-6 py-20 sm:px-10 lg:px-16">
+        <h2 className="font-display text-2xl font-semibold text-ink-950 md:text-3xl">
+          Tiga langkah, ruang siap dipakai
+        </h2>
+
+        <div className="mt-10 grid gap-8 md:grid-cols-3">
+          {[
+            {
+              step: "1",
+              icon: Search,
+              title: "Cari ruang",
+              desc: "Jelajahi katalog space berdasarkan tipe, kapasitas, dan lokasi yang kamu mau.",
+            },
+            {
+              step: "2",
+              icon: CalendarCheck,
+              title: "Pesan jadwal",
+              desc: "Pilih tanggal dan jam, pakai kode promo kalau ada, lalu konfirmasi.",
+            },
+            {
+              step: "3",
+              icon: DoorOpen,
+              title: "Datang & kerja",
+              desc: "Tunjukkan e-ticket saat check-in, dan ruangan siap kamu pakai.",
+            },
+          ].map(({ step, icon: Icon, title, desc }) => (
+            <div key={step}>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <Icon size={20} />
+              </div>
+              <p className="mt-4 font-display text-sm font-semibold text-brand-600">
+                Langkah {step}
+              </p>
+              <h3 className="mt-1 font-display text-lg font-medium text-ink-950">
+                {title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{desc}</p>
+            </div>
+          ))}
         </div>
-      </main>
+      </section>
+
+      <footer className="border-t border-surface-200 px-6 py-8 text-center text-sm text-ink-600 sm:px-10 lg:px-16">
+        © 2026 Co-Work. Booking ruang kerja jadi lebih simpel.
+      </footer>
     </div>
   );
 }
