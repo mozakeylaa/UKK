@@ -15,7 +15,7 @@ import CancelReservationModal from "@/components/member/reservasi/CancelReservat
 
 export default function StatusPemesananPage() {
   const [reservasiList, setReservasiList] = useState<Reservasi[]>([]);
-  const [activeTab, setActiveTab] = useState<ReservasiStatus | "semua">("semua");
+  const [activeFilter, setActiveFilter] = useState<ReservasiStatus | "semua">("semua");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,9 +41,9 @@ export default function StatusPemesananPage() {
   }, []);
 
   const filtered =
-    activeTab === "semua"
+    activeFilter === "semua"
       ? reservasiList
-      : reservasiList.filter((r) => r.status === activeTab);
+      : reservasiList.filter((r) => r.status === activeFilter);
 
   async function handleConfirmCancel() {
     if (!cancelTarget) return;
@@ -67,11 +67,11 @@ export default function StatusPemesananPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-medium text-ink-950">Status Pemesanan</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink-950">Status Pemesanan</h1>
         <p className="mt-1 text-sm text-ink-600">Pantau semua reservasi kamu di sini.</p>
       </div>
 
-      <ReservationTabs activeTab={activeTab} onTabChange={setActiveTab} />
+      <ReservationTabs activeTab={activeFilter} onTabChange={setActiveFilter} />
 
       {isLoading && <Spinner label="Memuat reservasi..." />}
 

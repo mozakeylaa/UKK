@@ -52,7 +52,7 @@ export default function SpaceCatalogPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-medium text-ink-950">Katalog Space</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink-950">Katalog Space</h1>
         <p className="mt-1 text-sm text-ink-600">
           Pilih coworking space yang sesuai kebutuhanmu.
         </p>
