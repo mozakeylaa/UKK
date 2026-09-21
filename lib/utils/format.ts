@@ -12,26 +12,50 @@ export function formatDate(dateStr: string | null | undefined): string {
   });
 }
 
-// lib/utils/format.ts (tambahkan fungsi ini)
 export function getImageUrl(
   pathOrFilename?: string | null,
   folder: "members" | "spaces" = "members"
 ): string | null {
-  if (!pathOrFilename) return null;
-  
-  // Jika sudah berupa URL lengkap (http://... atau data:image/...)
-  if (pathOrFilename.startsWith("http://") || pathOrFilename.startsWith("https://") || pathOrFilename.startsWith("data:")) {
-    return pathOrFilename;
+  if (!pathOrFilename || pathOrFilename.trim() === "") return null;
+
+  const trimmed = pathOrFilename.trim();
+
+  // Jika sudah berupa data URL
+  if (trimmed.startsWith("data:")) {
+    return trimmed;
   }
 
-  // Ambil base URL API dari env atau apiClient
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  
-  // Sesuaikan route static file di backend kamu (biasanya /uploads/members/... atau /storage/...)
-  const cleanPath = pathOrFilename.replace(/^\/+/, "");
+  // Ambil base URL API dari env (NEXT_PUBLIC_API_BASE_URL atau NEXT_PUBLIC_API_URL)
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://learn.smktelkom-mlg.sch.id/coworking";
+
+  const normalizedBase = apiBase.replace(/\/+$/, "");
+
+  // Perbaiki URL dari backend panitia yang mengembalikan tanpa subpath /coworking
+  // Contoh: http://learn.smktelkom-mlg.sch.id/uploads/... -> https://learn.smktelkom-mlg.sch.id/coworking/uploads/...
+  if (
+    trimmed.startsWith("http://learn.smktelkom-mlg.sch.id/uploads") ||
+    trimmed.startsWith("https://learn.smktelkom-mlg.sch.id/uploads")
+  ) {
+    return trimmed.replace(
+      /^https?:\/\/learn\.smktelkom-mlg\.sch\.id\/uploads/,
+      "https://learn.smktelkom-mlg.sch.id/coworking/uploads"
+    );
+  }
+
+  // Jika berupa URL eksternal lengkap lainnya
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  // Jika berupa path relatif uploads/
+  const cleanPath = trimmed.replace(/^\/+/, "");
   if (cleanPath.startsWith("uploads/")) {
-    return `${baseUrl}/${cleanPath}`;
+    return `${normalizedBase}/${cleanPath}`;
   }
 
-  return `${baseUrl}/uploads/${folder}/${cleanPath}`;
+  // Jika berupa nama file mentah
+  return `${normalizedBase}/uploads/${folder}/${cleanPath}`;
 }

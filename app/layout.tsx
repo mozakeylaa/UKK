@@ -20,7 +20,11 @@ export const metadata: Metadata = {
   description: "Reservasi coworking space & workstation",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="id" className={`${baloo.variable} ${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
