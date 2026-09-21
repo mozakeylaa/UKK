@@ -9,40 +9,45 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Typography — terhubung ke next/font di app/layout.tsx */
   --font-display: var(--font-baloo);
   --font-sans: var(--font-jakarta);
 
-  /* Brand - Denim Blue */
-  --color-brand-50: #eef4fb;
-  --color-brand-100: #d9e8f6;
-  --color-brand-400: #4a8fd6;
-  --color-brand-500: #2f74c0;
-  --color-brand-600: #1b5fa8;
-  --color-brand-700: #154a85;
+  /* Brand — Violet-Blue */
+  --color-brand-50: #EEEFFF;
+  --color-brand-100: #E4E9FF;
+  --color-brand-400: #8494FF;
+  --color-brand-500: #6367FF;
+  --color-brand-600: #4A4FE0;
+  --color-brand-700: #3B3FC4;
 
-  /* Navy - warna dasar gradient */
-  --color-navy-700: #16305c;
-  --color-navy-800: #102048;
-  --color-navy-900: #0a1730;
+  /* Rose — aksen CTA */
+  --color-rose-100: #FFDBFD;
+  --color-rose-400: #FF8FC2;
+  --color-rose-500: #FF5DA2;
+  --color-rose-600: #E84890;
 
-  /* Ink / Text Colors */
-  --color-ink-600: #4b5563;
-  --color-ink-700: #374151;
-  --color-ink-800: #1f2937;
-  --color-ink-950: #030712;
+  /* Navy — dasar gradient gelap (sidebar & hero) */
+  --color-navy-700: #2A2F6B;
+  --color-navy-800: #1B1E52;
+  --color-navy-900: #12132E;
 
-  /* Surface / Background Colors */
-  --color-surface-50: #f9fafb;
-  --color-surface-100: #f3f4f6;
-  --color-surface-200: #e5e7eb;
+  /* Ink / Text */
+  --color-ink-600: #5B5E82;
+  --color-ink-700: #3E4160;
+  --color-ink-800: #24263F;
+  --color-ink-950: #12132E;
 
-  /* Status Colors */
-  --color-status-pending: #d97706;
-  --color-status-approved: #2563eb;
-  --color-status-active: #059669;
-  --color-status-done: #4b5563;
-  --color-status-cancelled: #dc2626;
+  /* Surface / Background */
+  --color-surface-50: #F7F7FC;
+  --color-surface-100: #F1F0FB;
+  --color-surface-200: #ECEBFA;
+
+  /* Status */
+  --color-status-pending: #B4790A;
+  --color-status-approved: #4A4FE0;
+  --color-status-active: #1B8A5A;
+  --color-status-done: #5B5E82;
+  --color-status-cancelled: #DC2626;
 }
 
 body {
@@ -56,19 +61,36 @@ body {
   outline-offset: 2px;
 }
 
-/* Gradient biru-denim, dipakai di background halaman auth (login/register) & hero landing */
 .bg-navy-gradient {
-  background: radial-gradient(120% 120% at 15% 0%, #1e4d8c 0%, #0a1730 55%, #060f22 100%);
+  background:
+    radial-gradient(55% 50% at 85% -10%, rgba(132,148,255,.5), transparent 60%),
+    radial-gradient(40% 35% at 5% 10%, rgba(255,219,253,.2), transparent 60%),
+    linear-gradient(160deg, #12132E 0%, #1B1E52 35%, #3B3FC4 150%);
 }
 
-/* Single entrance sequence untuk hero content — staggered via delay, bukan looping */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(.6) rotate(-6deg); }
+  to { opacity: 1; transform: scale(1) rotate(-6deg); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(16deg); }
+  40% { transform: rotate(-8deg); }
+  60% { transform: rotate(16deg); }
 }

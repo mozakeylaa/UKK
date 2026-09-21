@@ -3,10 +3,10 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 import { registerAdminSpace } from "@/lib/api/auth";
 import { isApiSuccess } from "@/lib/types/api";
 import Button from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import AuthCardHeader from "@/components/auth/AuthCardHeader";
 import AdminRegisterFormFields, {
   AdminRegisterFormState,
@@ -72,37 +72,68 @@ export default function RegisterAdminPage() {
         setServerError(res.message);
       }
     } catch {
-      setServerError("Terjadi kesalahan. Coba lagi.");
+      setServerError("Terjadi kesalahan koneksi. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-navy-gradient px-4 py-10">
-      <Card className="w-full max-w-2xl shadow-xl">
-        <AuthCardHeader
-          title="Daftar Pengelola Space"
-          subtitle="Buat akun untuk mengelola coworking space kamu."
-        />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy-gradient px-4 py-12">
+      {/* Glow ambient background */}
+      <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[#8494FF]/25 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-16 h-80 w-80 rounded-full bg-[#FF8FC2]/20 blur-3xl" />
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <AdminRegisterFormFields form={form} errors={errors} onChange={handleChange} />
-
-          {serverError && <p className="text-sm text-status-cancelled">{serverError}</p>}
-
-          <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-            Daftar
-          </Button>
-        </form>
-
-        <p className="mt-4 text-center text-sm text-ink-600">
-          Sudah punya akun?{" "}
-          <Link href="/login" className="font-medium text-brand-600 hover:underline">
-            Masuk
+      <div
+        className="relative w-full max-w-2xl opacity-0"
+        style={{ animation: "fadeUp 0.6s ease 0.05s forwards" }}
+      >
+        {/* Logo Branding */}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <Link href="/" className="group flex items-center gap-2.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] font-display text-base font-bold text-white shadow-lg shadow-[#FF5DA2]/30 transition-transform group-hover:scale-105">
+              CW
+            </div>
+            <span className="font-display text-xl font-bold text-white tracking-wide">
+              Co-Work <span className="text-xs font-normal text-slate-300">admin space</span>
+            </span>
           </Link>
-        </p>
-      </Card>
+        </div>
+
+        {/* Card Container */}
+        <div className="rounded-3xl bg-white/95 p-6 sm:p-10 backdrop-blur-xl border border-white/20 shadow-2xl shadow-slate-950/20">
+          <AuthCardHeader
+            title="Daftar Pengelola Space"
+            subtitle="Buat akun untuk mengelola coworking space dan memantau pemesanan."
+          />
+
+          <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+            <AdminRegisterFormFields form={form} errors={errors} onChange={handleChange} />
+
+            {serverError && (
+              <div className="flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3 text-xs font-medium text-rose-600">
+                <AlertCircle size={15} className="shrink-0" />
+                <span>{serverError}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              isLoading={isSubmitting}
+              className="mt-4 w-full !bg-gradient-to-r !from-[#6367FF] !to-[#8494FF] !py-3 !text-sm !font-bold !text-white !shadow-lg !shadow-[#6367FF]/25 hover:!opacity-95"
+            >
+              Daftar Sebagai Pengelola
+            </Button>
+          </form>
+
+          <p className="mt-6 pt-5 border-t border-slate-100 text-center text-xs text-slate-500">
+            Sudah punya akun?{" "}
+            <Link href="/login" className="font-bold text-[#6367FF] hover:text-[#4A4FE0] hover:underline ml-1">
+              Masuk sekarang
+            </Link>
+          </p>
+        </div>
+      </div>
     </main>
   );
 }

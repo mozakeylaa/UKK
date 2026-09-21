@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Building2, ShieldCheck, AlertTriangle } from "lucide-react";
 import { getAdminProfile, updateAdminProfile } from "@/lib/api/admin-profile";
 import { isApiSuccess } from "@/lib/types/api";
-import { Card } from "@/components/ui/Card";
 import Spinner from "@/components/ui/Spinner";
 import AdminProfileForm, {
   AdminProfileData,
@@ -40,31 +40,55 @@ export default function AdminProfilPage() {
     try {
       const res = await updateAdminProfile(data);
       if (isApiSuccess(res)) {
-        setSuccessMessage("Profil berhasil diperbarui.");
+        setSuccessMessage("Profil coworking space berhasil diperbarui.");
         setProfileData(data);
       } else {
         setSubmitError(res.message);
       }
     } catch {
-      setSubmitError("Terjadi kesalahan. Coba lagi.");
+      setSubmitError("Terjadi kesalahan sistem saat memperbarui profil. Coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  if (isLoading) return <Spinner label="Memuat profil..." />;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24">
+        <Spinner label="Memuat profil coworking space..." />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-ink-950">Profil Lokasi</h1>
-        <p className="mt-1 text-sm text-ink-600">Kelola informasi coworking space kamu.</p>
+    <div className="mx-auto max-w-2xl flex flex-col gap-6 pb-12">
+      {/* Header Info */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            Profil Lokasi
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500">
+            Kelola nama coworking space, identitas pengelola/pemilik, dan nomor kontak resmi.
+          </p>
+        </div>
+
+        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] text-white shadow-md shadow-[#FF5DA2]/25">
+          <Building2 size={22} />
+        </div>
       </div>
 
-      <Card className="max-w-lg">
-        {loadError && <p className="mb-4 text-sm text-status-cancelled">{loadError}</p>}
+      {/* Error State */}
+      {loadError && (
+        <div className="flex items-center gap-3 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs font-medium text-rose-600">
+          <AlertTriangle size={18} className="shrink-0" />
+          <span>{loadError}</span>
+        </div>
+      )}
 
-        {profileData && (
+      {/* Main Profile Form Card */}
+      {profileData && (
+        <div className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-100 shadow-xl shadow-slate-900/5">
           <AdminProfileForm
             initialData={profileData}
             onSubmit={handleSubmit}
@@ -72,8 +96,18 @@ export default function AdminProfilPage() {
             submitError={submitError}
             successMessage={successMessage}
           />
-        )}
-      </Card>
+        </div>
+      )}
+
+      {/* Info Badge Keamanan */}
+      <div className="flex items-center gap-3 rounded-2xl bg-white p-4 border border-slate-100 shadow-sm text-xs text-slate-500">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+          <ShieldCheck size={16} />
+        </div>
+        <p className="leading-relaxed">
+          Nama coworking space dan nomor kontak akan otomatis tertera pada tiket reservasi digital member.
+        </p>
+      </div>
     </div>
   );
 }

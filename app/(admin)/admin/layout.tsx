@@ -13,10 +13,10 @@ import DashboardShell, { NavItem } from "@/components/shared/DashboardShell";
 
 const adminNavItems: NavItem[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { label: "Reservasi", href: "/admin/reservasi", icon: CalendarCheck },
+  { label: "Reservasi", href: "/admin/reservasi", icon: CalendarCheck, badge: 4 },
   { label: "Space", href: "/admin/spaces", icon: Building2 },
   { label: "Diskon", href: "/admin/diskon", icon: Tag },
-  { label: "Member", href: "/admin/member", icon: Users },
+  { label: "Member", href: "/admin/members", icon: Users },
   { label: "Laporan", href: "/admin/laporan", icon: FileBarChart },
   { label: "Akun", href: "/admin/profil", icon: UserCircle },
 ];
