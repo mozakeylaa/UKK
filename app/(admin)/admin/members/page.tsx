@@ -6,12 +6,11 @@ import { getAdminMembers, deleteAdminMember } from "@/lib/api/admin-members";
 import { isApiSuccess } from "@/lib/types/api";
 import type { Member } from "@/lib/types/member";
 import Button from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
 import Input from "@/components/ui/Input";
-import Modal from "@/components/ui/Modal";
 import Spinner from "@/components/ui/Spinner";
-import Table from "@/components/ui/Table";
+import MemberTableCard from "@/components/admin/members/MemberTableCard";
+import MemberDeleteModal from "@/components/admin/members/MemberDeleteModal";
 
 export default function AdminMembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -55,7 +54,7 @@ export default function AdminMembersPage() {
   }
 
   async function handleDelete(id: number) {
-    setDeleteModal({ ...deleteModal, isDeleting: true });
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const res = await deleteAdminMember(id);
       if (isApiSuccess(res)) {
@@ -67,8 +66,17 @@ export default function AdminMembersPage() {
     } catch (err) {
       setError("Gagal menghapus member");
     } finally {
-      setDeleteModal({ ...deleteModal, isDeleting: false });
+      setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
     }
+  }
+
+  function handleRequestDelete(id: number, name: string) {
+    setDeleteModal({
+      open: true,
+      memberId: id,
+      memberName: name,
+      isDeleting: false,
+    });
   }
 
   return (
@@ -104,77 +112,21 @@ export default function AdminMembersPage() {
           }
         />
       ) : (
-        <Card>
-          <Table<Member>
-            columns={[
-              { header: "Username", accessor: (row) => row.username },
-              { header: "Nama", accessor: (row) => row.nama_member },
-              { header: "Instansi", accessor: (row) => row.instansi },
-              { header: "Telepon", accessor: (row) => row.telp },
-              {
-                header: "Aksi",
-                accessor: (row) => (
-                  <div className="flex items-center gap-2">
-                    <Link href={`/admin/members/${row.id}/edit`}>
-                      <Button variant="outline" size="sm">
-                        Edit
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        setDeleteModal({
-                          open: true,
-                          memberId: row.id,
-                          memberName: row.nama_member,
-                          isDeleting: false,
-                        })
-                      }
-                    >
-                      Hapus
-                    </Button>
-                  </div>
-                ),
-              },
-            ]}
-            data={members}
-            keyExtractor={(row) => row.id}
-          />
-        </Card>
+        <MemberTableCard
+          members={members}
+          onRequestDelete={handleRequestDelete}
+        />
       )}
 
-      <Modal
+      <MemberDeleteModal
         open={deleteModal.open}
+        memberName={deleteModal.memberName}
+        isDeleting={deleteModal.isDeleting}
         onClose={() =>
           setDeleteModal({ open: false, memberId: null, memberName: "", isDeleting: false })
         }
-        title="Hapus Member"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-ink-600">
-            Yakin ingin menghapus member <strong>{deleteModal.memberName}</strong>? Data reservasi
-            terkait mungkin ikut terpengaruh.
-          </p>
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                setDeleteModal({ open: false, memberId: null, memberName: "", isDeleting: false })
-              }
-            >
-              Batal
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={deleteModal.isDeleting}
-              onClick={() => deleteModal.memberId && handleDelete(deleteModal.memberId)}
-            >
-              Hapus
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onConfirm={() => deleteModal.memberId && handleDelete(deleteModal.memberId)}
+      />
     </div>
   );
 }

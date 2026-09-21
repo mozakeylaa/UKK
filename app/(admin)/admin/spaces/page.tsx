@@ -2,22 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { getAdminSpaces, deleteAdminSpace } from "@/lib/api/admin-spaces";
 import { isApiSuccess } from "@/lib/types/api";
 import type { AdminSpace } from "@/lib/types/admin";
-import { formatRupiah } from "@/lib/utils/format";
-import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
 import Spinner from "@/components/ui/Spinner";
 import EmptyState from "@/components/ui/EmptyState";
-
-const TIPE_LABEL: Record<string, string> = {
-  desk: "Personal Desk",
-  meeting_room: "Meeting Room",
-  private_office: "Private Office",
-};
+import SpaceGridCard from "@/components/admin/spaces/SpaceGridCard";
+import SpaceDeleteModal from "@/components/admin/spaces/SpaceDeleteModal";
 
 export default function AdminSpacesPage() {
   const [spaces, setSpaces] = useState<AdminSpace[]>([]);
@@ -96,60 +89,19 @@ export default function AdminSpacesPage() {
       )}
 
       {!isLoading && !error && spaces.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {spaces.map((space) => (
-            <Card key={space.id} className="flex flex-col gap-3 p-0 overflow-hidden">
-              <div className="aspect-video w-full bg-surface-100">
-                {space.foto_url ? (
-                  <img src={space.foto_url} alt={space.nama_space} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs text-ink-600">
-                    Tidak ada foto
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-1 flex-col gap-2 px-4 pb-4">
-                <div>
-                  <p className="font-display text-base font-semibold text-ink-950">{space.nama_space}</p>
-                  <p className="text-xs text-ink-600">{TIPE_LABEL[space.tipe] ?? space.tipe}</p>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-ink-600">Kapasitas {space.kapasitas} orang</span>
-                  <span className="font-display font-semibold text-brand-700">
-                    {formatRupiah(space.harga_per_jam)}/jam
-                  </span>
-                </div>
-                <div className="mt-2 flex gap-2">
-                  <Link href={`/admin/spaces/${space.id}/edit`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full">
-                      <Pencil size={14} className="mr-1" />
-                      Edit
-                    </Button>
-                  </Link>
-                  <Button variant="danger" size="sm" onClick={() => setDeleteTarget(space)}>
-                    <Trash2 size={14} />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <SpaceGridCard
+          spaces={spaces}
+          onRequestDelete={setDeleteTarget}
+        />
       )}
 
-      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Hapus Space">
-        <p className="text-sm text-ink-600">
-          Yakin ingin menghapus <strong>{deleteTarget?.nama_space}</strong>? Tindakan ini tidak bisa dibatalkan.
-        </p>
-        {deleteError && <p className="mt-3 text-sm text-status-cancelled">{deleteError}</p>}
-        <div className="mt-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-            Batal
-          </Button>
-          <Button variant="danger" isLoading={isDeleting} onClick={handleConfirmDelete}>
-            Ya, Hapus
-          </Button>
-        </div>
-      </Modal>
+      <SpaceDeleteModal
+        deleteTarget={deleteTarget}
+        isDeleting={isDeleting}
+        deleteError={deleteError}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

@@ -5,11 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { getAdminMemberDetail, updateAdminMember } from "@/lib/api/admin-members";
 import { isApiSuccess } from "@/lib/types/api";
 import type { Member, UpdateMemberPayload } from "@/lib/types/member";
-import Button from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import ImageUpload from "@/components/ui/ImageUpload";
-import Input from "@/components/ui/Input";
 import Spinner from "@/components/ui/Spinner";
+import EmptyState from "@/components/ui/EmptyState";
+import MemberForm, { MemberFormData } from "@/components/admin/members/MemberForm";
 
 export default function EditMemberPage() {
   const params = useParams();
@@ -20,15 +19,6 @@ export default function EditMemberPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState("");
-  const [formData, setFormData] = useState<UpdateMemberPayload>({
-    username: "",
-    nama_member: "",
-    instansi: "",
-    alamat: "",
-    telp: "",
-    foto: undefined,
-  });
 
   useEffect(() => {
     async function fetchMember() {
@@ -36,18 +26,10 @@ export default function EditMemberPage() {
         const res = await getAdminMemberDetail(memberId);
         if (isApiSuccess(res)) {
           setMember(res.data);
-          setFormData({
-            username: res.data.username,
-            nama_member: res.data.nama_member,
-            instansi: res.data.instansi,
-            alamat: res.data.alamat,
-            telp: res.data.telp,
-            foto: res.data.foto || undefined,
-          });
         } else {
           setError(res.message);
         }
-      } catch (err) {
+      } catch {
         setError("Gagal memuat data member");
       } finally {
         setLoading(false);
@@ -57,14 +39,20 @@ export default function EditMemberPage() {
     fetchMember();
   }, [memberId]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(data: MemberFormData) {
     setSubmitting(true);
     setError(null);
 
-    const payload: UpdateMemberPayload = { ...formData };
-    if (newPassword.trim()) {
-      payload.password = newPassword;
+    const payload: UpdateMemberPayload = {
+      username: data.username,
+      nama_member: data.nama_member,
+      instansi: data.instansi,
+      alamat: data.alamat,
+      telp: data.telp,
+      foto: data.foto,
+    };
+    if (data.password?.trim()) {
+      payload.password = data.password;
     }
 
     try {
@@ -74,7 +62,7 @@ export default function EditMemberPage() {
       } else {
         setError(res.message);
       }
-    } catch (err) {
+    } catch {
       setError("Gagal memperbarui member");
     } finally {
       setSubmitting(false);
@@ -82,7 +70,9 @@ export default function EditMemberPage() {
   }
 
   if (loading) return <Spinner label="Memuat data member..." />;
-  if (!member) return <div className="text-center text-ink-600">Member tidak ditemukan</div>;
+  if (!member) {
+    return <EmptyState title="Member tidak ditemukan" description={error ?? "Data tidak tersedia."} />;
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -91,81 +81,21 @@ export default function EditMemberPage() {
           <CardTitle>Edit Member: {member.nama_member}</CardTitle>
         </CardHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Username"
-            name="username"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            required
-          />
-
-          <Input
-            label="Reset Password (opsional)"
-            name="password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Kosongkan jika tidak ingin mengubah"
-            minLength={6}
-            hint="Isi hanya jika ingin mereset password member"
-          />
-
-          <Input
-            label="Nama Lengkap"
-            name="nama_member"
-            value={formData.nama_member}
-            onChange={(e) => setFormData({ ...formData, nama_member: e.target.value })}
-            required
-          />
-
-          <Input
-            label="Instansi"
-            name="instansi"
-            value={formData.instansi}
-            onChange={(e) => setFormData({ ...formData, instansi: e.target.value })}
-            required
-          />
-
-          <Input
-            label="Alamat"
-            name="alamat"
-            value={formData.alamat}
-            onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-            required
-          />
-
-          <Input
-            label="Nomor Telepon"
-            name="telp"
-            type="tel"
-            value={formData.telp}
-            onChange={(e) => setFormData({ ...formData, telp: e.target.value })}
-            required
-          />
-
-          <ImageUpload
-            target="members"
-            value={formData.foto || undefined}
-            onUploaded={(filename) => setFormData({ ...formData, foto: filename })}
-            label="Foto Member"
-          />
-
-          {error && (
-            <div className="rounded-md bg-status-cancelled/10 p-3 text-sm text-status-cancelled">
-              {error}
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={() => router.back()}>
-              Batal
-            </Button>
-            <Button type="submit" isLoading={submitting}>
-              Simpan Perubahan
-            </Button>
-          </div>
-        </form>
+        <MemberForm
+          initialData={{
+            username: member.username,
+            nama_member: member.nama_member,
+            instansi: member.instansi,
+            alamat: member.alamat,
+            telp: member.telp,
+            foto: member.foto || undefined,
+          }}
+          isEditMode
+          onSubmit={handleSubmit}
+          submitting={submitting}
+          error={error}
+          onCancel={() => router.back()}
+        />
       </Card>
     </div>
   );

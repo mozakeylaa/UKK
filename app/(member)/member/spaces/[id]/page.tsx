@@ -5,18 +5,10 @@ import { useRouter } from "next/navigation";
 import { getSpaceById, checkAvailability } from "@/lib/api/space";
 import { isApiSuccess } from "@/lib/types/api";
 import type { Space, AvailabilityResult } from "@/lib/types/space";
-import { formatRupiah } from "@/lib/utils/format";
-import { Card } from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
-import Button from "@/components/ui/Button";
 import Spinner from "@/components/ui/Spinner";
 import EmptyState from "@/components/ui/EmptyState";
-
-const DURASI_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8].map((d) => ({
-  label: `${d} jam`,
-  value: String(d),
-}));
+import SpaceInfoCard from "@/components/member/spaces/SpaceInfoCard";
+import AvailabilityCheckCard from "@/components/member/spaces/AvailabilityCheckCard";
 
 export default function SpaceDetailPage({
   params,
@@ -108,107 +100,22 @@ export default function SpaceDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="aspect-video w-full overflow-hidden rounded-lg bg-surface-100">
-          {space.foto_url ? (
-            <img
-              src={space.foto_url}
-              alt={space.nama_space}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm text-ink-600">
-              Tidak ada foto
-            </div>
-          )}
-        </div>
+      <SpaceInfoCard space={space} />
 
-        <div className="flex flex-col gap-3">
-          <div>
-            <h1 className="font-display text-2xl font-medium text-ink-950">{space.nama_space}</h1>
-            <p className="text-sm text-ink-600">{space.owner?.nama_coworking}</p>
-          </div>
-          <p className="text-sm text-ink-600">{space.deskripsi}</p>
-          <div className="flex flex-wrap gap-4 pt-2">
-            <div>
-              <p className="text-xs text-ink-600">Kapasitas</p>
-              <p className="font-medium text-ink-950">{space.kapasitas} orang</p>
-            </div>
-            <div>
-              <p className="text-xs text-ink-600">Harga</p>
-              <p className="font-medium text-ink-950">
-                {formatRupiah(space.harga_per_jam)}/jam
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Card>
-        <h2 className="font-display text-lg font-medium text-ink-950">Cek Ketersediaan</h2>
-        <p className="mb-4 mt-1 text-sm text-ink-600">
-          Pilih tanggal dan jam untuk memeriksa ketersediaan space ini.
-        </p>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Input
-            type="date"
-            label="Tanggal"
-            value={tanggal}
-            onChange={(e) => setTanggal(e.target.value)}
-          />
-          <Input
-            type="time"
-            label="Jam mulai"
-            value={jamMulai}
-            onChange={(e) => setJamMulai(e.target.value)}
-          />
-          <Select
-            label="Durasi"
-            options={DURASI_OPTIONS}
-            value={durasiJam}
-            onChange={(e) => setDurasiJam(e.target.value)}
-          />
-        </div>
-
-        {formError && <p className="mt-3 text-sm text-status-cancelled">{formError}</p>}
-
-        <Button
-          type="button"
-          variant="outline"
-          className="mt-4"
-          isLoading={isChecking}
-          onClick={handleCheckAvailability}
-        >
-          Cek Ketersediaan
-        </Button>
-
-        {availError && (
-          <p className="mt-4 rounded-md bg-status-cancelled/10 px-3 py-2 text-sm text-status-cancelled">
-            {availError}
-          </p>
-        )}
-
-        {result && (
-          <div className="mt-4 flex flex-col gap-3 rounded-md bg-brand-50 px-4 py-3">
-            {result.available ? (
-              <>
-                <p className="text-sm text-brand-700">
-                  Tersedia sampai pukul <strong>{result.jam_selesai}</strong>. Estimasi total:{" "}
-                  <strong>{formatRupiah(result.estimasi_total)}</strong>
-                </p>
-                <Button type="button" onClick={handleLanjutkan} className="w-fit">
-                  Lanjutkan
-                </Button>
-              </>
-            ) : (
-              <p className="text-sm text-status-cancelled">
-                Jadwal bentrok, space tidak tersedia pada waktu tersebut.
-              </p>
-            )}
-          </div>
-        )}
-      </Card>
+      <AvailabilityCheckCard
+        tanggal={tanggal}
+        jamMulai={jamMulai}
+        durasiJam={durasiJam}
+        formError={formError}
+        isChecking={isChecking}
+        availError={availError}
+        result={result}
+        onChangeTanggal={setTanggal}
+        onChangeJamMulai={setJamMulai}
+        onChangeDurasi={setDurasiJam}
+        onCheckAvailability={handleCheckAvailability}
+        onLanjutkan={handleLanjutkan}
+      />
     </div>
   );
 }

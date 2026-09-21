@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { getAdminProfile, updateAdminProfile } from "@/lib/api/admin-profile";
 import { isApiSuccess } from "@/lib/types/api";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Spinner from "@/components/ui/Spinner";
+import AdminProfileForm, {
+  AdminProfileData,
+} from "@/components/admin/profil/AdminProfileForm";
 
 export default function AdminProfilPage() {
-  const [namaCoworking, setNamaCoworking] = useState("");
-  const [namaPemilik, setNamaPemilik] = useState("");
-  const [telp, setTelp] = useState("");
+  const [profileData, setProfileData] = useState<AdminProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ nama_coworking?: string; nama_pemilik?: string; telp?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -22,9 +20,11 @@ export default function AdminProfilPage() {
   useEffect(() => {
     getAdminProfile().then((res) => {
       if (isApiSuccess(res)) {
-        setNamaCoworking(res.data.nama_coworking ?? "");
-        setNamaPemilik(res.data.nama_pemilik ?? "");
-        setTelp(res.data.telp ?? "");
+        setProfileData({
+          nama_coworking: res.data.nama_coworking ?? "",
+          nama_pemilik: res.data.nama_pemilik ?? "",
+          telp: res.data.telp ?? "",
+        });
       } else {
         setLoadError(res.message);
       }
@@ -32,30 +32,16 @@ export default function AdminProfilPage() {
     });
   }, []);
 
-  function validate(): boolean {
-    const newErrors: typeof errors = {};
-    if (!namaCoworking.trim()) newErrors.nama_coworking = "Nama coworking wajib diisi";
-    if (!namaPemilik.trim()) newErrors.nama_pemilik = "Nama pemilik wajib diisi";
-    if (!telp.trim()) newErrors.telp = "No telp wajib diisi";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(data: AdminProfileData) {
     setSubmitError(null);
     setSuccessMessage(null);
-    if (!validate()) return;
-
     setIsSubmitting(true);
+
     try {
-      const res = await updateAdminProfile({
-        nama_coworking: namaCoworking,
-        nama_pemilik: namaPemilik,
-        telp,
-      });
+      const res = await updateAdminProfile(data);
       if (isApiSuccess(res)) {
         setSuccessMessage("Profil berhasil diperbarui.");
+        setProfileData(data);
       } else {
         setSubmitError(res.message);
       }
@@ -78,33 +64,15 @@ export default function AdminProfilPage() {
       <Card className="max-w-lg">
         {loadError && <p className="mb-4 text-sm text-status-cancelled">{loadError}</p>}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Nama coworking"
-            value={namaCoworking}
-            onChange={(e) => setNamaCoworking(e.target.value)}
-            error={errors.nama_coworking}
+        {profileData && (
+          <AdminProfileForm
+            initialData={profileData}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
+            successMessage={successMessage}
           />
-          <Input
-            label="Nama pemilik"
-            value={namaPemilik}
-            onChange={(e) => setNamaPemilik(e.target.value)}
-            error={errors.nama_pemilik}
-          />
-          <Input
-            label="No telp"
-            value={telp}
-            onChange={(e) => setTelp(e.target.value)}
-            error={errors.telp}
-          />
-
-          {submitError && <p className="text-sm text-status-cancelled">{submitError}</p>}
-          {successMessage && <p className="text-sm text-status-active">{successMessage}</p>}
-
-          <Button type="submit" isLoading={isSubmitting} className="mt-2 w-fit">
-            Simpan Perubahan
-          </Button>
-        </form>
+        )}
       </Card>
     </div>
   );

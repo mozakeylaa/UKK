@@ -6,29 +6,10 @@ import { getAdminDiskon, deleteAdminDiskon } from "@/lib/api/admin-diskon";
 import { isApiSuccess } from "@/lib/types/api";
 import type { Diskon } from "@/lib/types/reservasi";
 import Button from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import EmptyState from "@/components/ui/EmptyState";
-import Modal from "@/components/ui/Modal";
 import Spinner from "@/components/ui/Spinner";
-import Table from "@/components/ui/Table";
-
-function getDiskonStatus(diskon: Diskon): { label: string; active: boolean } {
-  const now = new Date();
-  const awal = new Date(diskon.tanggal_awal);
-  const akhir = new Date(diskon.tanggal_akhir);
-
-  if (now < awal) return { label: "Belum mulai", active: false };
-  if (now > akhir) return { label: "Berakhir", active: false };
-  return { label: "Aktif", active: true };
-}
-
-function formatTanggal(iso: string): string {
-  return new Date(iso).toLocaleDateString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
+import DiskonTableCard from "@/components/admin/diskon/DiskonTableCard";
+import DiskonDeleteModal from "@/components/admin/diskon/DiskonDeleteModal";
 
 export default function AdminDiskonPage() {
   const [diskonList, setDiskonList] = useState<Diskon[]>([]);
@@ -68,7 +49,7 @@ export default function AdminDiskonPage() {
   }
 
   async function handleDelete(id: number) {
-    setDeleteModal({ ...deleteModal, isDeleting: true });
+    setDeleteModal((prev) => ({ ...prev, isDeleting: true }));
     try {
       const res = await deleteAdminDiskon(id);
       if (isApiSuccess(res)) {
@@ -80,8 +61,17 @@ export default function AdminDiskonPage() {
     } catch (err) {
       setError("Gagal menghapus diskon");
     } finally {
-      setDeleteModal({ ...deleteModal, isDeleting: false });
+      setDeleteModal((prev) => ({ ...prev, isDeleting: false }));
     }
+  }
+
+  function handleRequestDelete(id: number, name: string) {
+    setDeleteModal({
+      open: true,
+      diskonId: id,
+      diskonName: name,
+      isDeleting: false,
+    });
   }
 
   if (loading) return <Spinner label="Memuat diskon..." />;
@@ -112,99 +102,21 @@ export default function AdminDiskonPage() {
           }
         />
       ) : (
-        <Card>
-          <Table<Diskon>
-            columns={[
-              { header: "Nama Diskon", accessor: (row) => row.nama_diskon },
-              {
-                header: "Persentase",
-                accessor: (row) => `${row.persentase_diskon}%`,
-              },
-              {
-                header: "Periode",
-                accessor: (row) =>
-                  `${formatTanggal(row.tanggal_awal)} - ${formatTanggal(row.tanggal_akhir)}`,
-              },
-              {
-                header: "Status",
-                accessor: (row) => {
-                  const status = getDiskonStatus(row);
-                  return (
-                    <span
-                      className={
-                        status.active
-                          ? "text-status-active font-medium"
-                          : "text-ink-600"
-                      }
-                    >
-                      {status.label}
-                    </span>
-                  );
-                },
-              },
-              {
-                header: "Aksi",
-                accessor: (row) => (
-                  <div className="flex items-center gap-2">
-                    <Link href={`/admin/diskon/${row.id}/edit`}>
-                      <Button variant="outline" size="sm">
-                        Edit
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() =>
-                        setDeleteModal({
-                          open: true,
-                          diskonId: row.id,
-                          diskonName: row.nama_diskon,
-                          isDeleting: false,
-                        })
-                      }
-                    >
-                      Hapus
-                    </Button>
-                  </div>
-                ),
-              },
-            ]}
-            data={diskonList}
-            keyExtractor={(row) => row.id}
-          />
-        </Card>
+        <DiskonTableCard
+          diskonList={diskonList}
+          onRequestDelete={handleRequestDelete}
+        />
       )}
 
-      <Modal
+      <DiskonDeleteModal
         open={deleteModal.open}
+        diskonName={deleteModal.diskonName}
+        isDeleting={deleteModal.isDeleting}
         onClose={() =>
           setDeleteModal({ open: false, diskonId: null, diskonName: "", isDeleting: false })
         }
-        title="Hapus Diskon"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-ink-600">
-            Yakin ingin menghapus diskon <strong>{deleteModal.diskonName}</strong>?
-          </p>
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                setDeleteModal({ open: false, diskonId: null, diskonName: "", isDeleting: false })
-              }
-            >
-              Batal
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={deleteModal.isDeleting}
-              onClick={() => deleteModal.diskonId && handleDelete(deleteModal.diskonId)}
-            >
-              Hapus
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        onConfirm={() => deleteModal.diskonId && handleDelete(deleteModal.diskonId)}
+      />
     </div>
   );
 }

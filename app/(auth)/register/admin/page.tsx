@@ -5,20 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerAdminSpace } from "@/lib/api/auth";
 import { isApiSuccess } from "@/lib/types/api";
-import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import AuthCardHeader from "@/components/auth/AuthCardHeader";
+import AdminRegisterFormFields, {
+  AdminRegisterFormState,
+} from "@/components/auth/AdminRegisterFormFields";
 
-type FormState = {
-  nama_coworking: string;
-  nama_pemilik: string;
-  telp: string;
-  username: string;
-  password: string;
-  confirmPassword: string;
-};
-
-const initialState: FormState = {
+const initialState: AdminRegisterFormState = {
   nama_coworking: "",
   nama_pemilik: "",
   telp: "",
@@ -29,17 +23,17 @@ const initialState: FormState = {
 
 export default function RegisterAdminPage() {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(initialState);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [form, setForm] = useState<AdminRegisterFormState>(initialState);
+  const [errors, setErrors] = useState<Partial<Record<keyof AdminRegisterFormState, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleChange(field: keyof FormState, value: string) {
+  function handleChange(field: keyof AdminRegisterFormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   function validate(): boolean {
-    const newErrors: Partial<Record<keyof FormState, string>> = {};
+    const newErrors: Partial<Record<keyof AdminRegisterFormState, string>> = {};
 
     if (!form.nama_coworking.trim()) newErrors.nama_coworking = "Nama coworking wajib diisi";
     if (!form.nama_pemilik.trim()) newErrors.nama_pemilik = "Nama pemilik wajib diisi";
@@ -87,64 +81,13 @@ export default function RegisterAdminPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-navy-gradient px-4 py-10">
       <Card className="w-full max-w-2xl shadow-xl">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-navy-800 font-display text-lg font-bold text-white shadow-md">
-          CW
-        </div>
-
-        <h1 className="text-center font-display text-xl font-semibold text-ink-950">
-          Daftar Pengelola Space
-        </h1>
-        <p className="mb-6 mt-1 text-center text-sm text-ink-600">
-          Buat akun untuk mengelola coworking space kamu.
-        </p>
+        <AuthCardHeader
+          title="Daftar Pengelola Space"
+          subtitle="Buat akun untuk mengelola coworking space kamu."
+        />
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="Nama coworking"
-              value={form.nama_coworking}
-              onChange={(e) => handleChange("nama_coworking", e.target.value)}
-              error={errors.nama_coworking}
-            />
-            <Input
-              label="Nama pemilik"
-              value={form.nama_pemilik}
-              onChange={(e) => handleChange("nama_pemilik", e.target.value)}
-              error={errors.nama_pemilik}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="No telp"
-              value={form.telp}
-              onChange={(e) => handleChange("telp", e.target.value)}
-              error={errors.telp}
-            />
-            <Input
-              label="Username"
-              value={form.username}
-              onChange={(e) => handleChange("username", e.target.value)}
-              error={errors.username}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="Password"
-              type="password"
-              value={form.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-              error={errors.password}
-            />
-            <Input
-              label="Konfirmasi password"
-              type="password"
-              value={form.confirmPassword}
-              onChange={(e) => handleChange("confirmPassword", e.target.value)}
-              error={errors.confirmPassword}
-            />
-          </div>
+          <AdminRegisterFormFields form={form} errors={errors} onChange={handleChange} />
 
           {serverError && <p className="text-sm text-status-cancelled">{serverError}</p>}
 

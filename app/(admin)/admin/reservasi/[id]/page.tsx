@@ -13,21 +13,11 @@ import type { Reservasi } from "@/lib/types/reservasi";
 import type { ReservasiStatus } from "@/components/ui/Badge";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import Select from "@/components/ui/Select";
 import Spinner from "@/components/ui/Spinner";
-
-const STATUS_OPTIONS: { label: string; value: ReservasiStatus }[] = [
-  { label: "Belum Dikonfirmasi", value: "belum_dikonfirm" },
-  { label: "Disetujui", value: "disetujui" },
-  { label: "Aktif", value: "aktif" },
-  { label: "Selesai", value: "selesai" },
-  { label: "Dibatalkan", value: "dibatalkan" },
-];
-
-function formatRupiah(value: number): string {
-  return `Rp ${value.toLocaleString("id-ID")}`;
-}
+import MemberInfoCard from "@/components/admin/reservasi/MemberInfoCard";
+import ScheduleInfoCard from "@/components/admin/reservasi/ScheduleInfoCard";
+import PaymentInfoCard from "@/components/admin/reservasi/PaymentInfoCard";
+import ReservationActionsCard from "@/components/admin/reservasi/ReservationActionsCard";
 
 export default function AdminReservasiDetailPage() {
   const params = useParams();
@@ -131,137 +121,33 @@ export default function AdminReservasiDetailPage() {
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Info Member</CardTitle>
-        </CardHeader>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-ink-600">Nama</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.member?.nama_member ?? "-"}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-600">Username</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.member?.username ?? "-"}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-600">Instansi</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.member?.instansi ?? "-"}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-600">Telepon</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.member?.telp ?? "-"}
-            </p>
-          </div>
-        </div>
-      </Card>
+      <MemberInfoCard member={reservasi.member} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Info Ruangan & Jadwal</CardTitle>
-        </CardHeader>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-ink-600">Ruangan</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.space?.nama_space ?? "-"}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-600">Tanggal</p>
-            <p className="font-medium text-ink-950">{reservasi.tanggal_reservasi}</p>
-          </div>
-          <div>
-            <p className="text-ink-600">Jam</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.jam_mulai} - {reservasi.jam_selesai}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-600">Durasi</p>
-            <p className="font-medium text-ink-950">{reservasi.durasi_jam} jam</p>
-          </div>
-          {reservasi.checked_in_at && (
-            <div>
-              <p className="text-ink-600">Check-In</p>
-              <p className="font-medium text-ink-950">{reservasi.checked_in_at}</p>
-            </div>
-          )}
-          {reservasi.checked_out_at && (
-            <div>
-              <p className="text-ink-600">Check-Out</p>
-              <p className="font-medium text-ink-950">{reservasi.checked_out_at}</p>
-            </div>
-          )}
-        </div>
-      </Card>
+      <ScheduleInfoCard
+        namaSpace={reservasi.space?.nama_space}
+        tanggalReservasi={reservasi.tanggal_reservasi}
+        jamMulai={reservasi.jam_mulai}
+        jamSelesai={reservasi.jam_selesai}
+        durasiJam={reservasi.durasi_jam}
+        checkedInAt={reservasi.checked_in_at}
+        checkedOutAt={reservasi.checked_out_at}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Pembayaran</CardTitle>
-        </CardHeader>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-ink-600">Harga Awal</p>
-            <p className="font-medium text-ink-950">
-              {formatRupiah(reservasi.total_harga_awal)}
-            </p>
-          </div>
-          <div>
-            <p className="text-ink-600">Diskon</p>
-            <p className="font-medium text-ink-950">
-              {reservasi.nama_diskon
-                ? `${reservasi.nama_diskon} (-${formatRupiah(reservasi.potongan_diskon)})`
-                : "-"}
-            </p>
-          </div>
-          <div className="col-span-2 border-t border-surface-200 pt-3">
-            <p className="text-ink-600">Total Bayar</p>
-            <p className="text-lg font-semibold text-ink-950">
-              {formatRupiah(reservasi.total_bayar)}
-            </p>
-          </div>
-        </div>
-      </Card>
+      <PaymentInfoCard
+        totalHargaAwal={reservasi.total_harga_awal}
+        namaDiskon={reservasi.nama_diskon}
+        potonganDiskon={reservasi.potongan_diskon}
+        totalBayar={reservasi.total_bayar}
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Aksi</CardTitle>
-        </CardHeader>
-        <div className="flex flex-col gap-4">
-          <Select
-            label="Ubah Status"
-            options={STATUS_OPTIONS}
-            value={reservasi.status}
-            onChange={(e) => handleStatusChange(e.target.value as ReservasiStatus)}
-            disabled={statusUpdating}
-          />
-
-          <div className="flex gap-2">
-            <Button
-              onClick={handleCheckIn}
-              disabled={reservasi.status !== "disetujui"}
-              isLoading={checkActionLoading}
-            >
-              Check-In
-            </Button>
-            <Button
-              onClick={handleCheckOut}
-              disabled={reservasi.status !== "aktif"}
-              isLoading={checkActionLoading}
-            >
-              Check-Out
-            </Button>
-          </div>
-        </div>
-      </Card>
+      <ReservationActionsCard
+        status={reservasi.status}
+        statusUpdating={statusUpdating}
+        checkActionLoading={checkActionLoading}
+        onStatusChange={handleStatusChange}
+        onCheckIn={handleCheckIn}
+        onCheckOut={handleCheckOut}
+      />
 
       <Button variant="ghost" onClick={() => router.back()}>
         Kembali

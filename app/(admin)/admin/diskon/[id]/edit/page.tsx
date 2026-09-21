@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getAdminDiskonDetail, updateAdminDiskon } from "@/lib/api/admin-diskon";
 import { isApiSuccess } from "@/lib/types/api";
-import type { Diskon, UpdateDiskonPayload } from "@/lib/types/reservasi";
-import Button from "@/components/ui/Button";
+import type { Diskon } from "@/lib/types/reservasi";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import Input from "@/components/ui/Input";
 import Spinner from "@/components/ui/Spinner";
+import EmptyState from "@/components/ui/EmptyState";
+import DiskonForm, { DiskonFormData } from "@/components/admin/diskon/DiskonForm";
 
 function toDateInputValue(iso: string): string {
   return iso ? iso.split("T")[0] : "";
@@ -23,12 +23,6 @@ export default function EditDiskonPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<UpdateDiskonPayload>({
-    nama_diskon: "",
-    persentase_diskon: 0,
-    tanggal_awal: "",
-    tanggal_akhir: "",
-  });
 
   useEffect(() => {
     async function fetchDiskon() {
@@ -36,16 +30,10 @@ export default function EditDiskonPage() {
         const res = await getAdminDiskonDetail(diskonId);
         if (isApiSuccess(res)) {
           setDiskon(res.data);
-          setFormData({
-            nama_diskon: res.data.nama_diskon,
-            persentase_diskon: res.data.persentase_diskon,
-            tanggal_awal: toDateInputValue(res.data.tanggal_awal),
-            tanggal_akhir: toDateInputValue(res.data.tanggal_akhir),
-          });
         } else {
           setError(res.message);
         }
-      } catch (err) {
+      } catch {
         setError("Gagal memuat data diskon");
       } finally {
         setLoading(false);
@@ -55,30 +43,8 @@ export default function EditDiskonPage() {
     fetchDiskon();
   }, [diskonId]);
 
-  function validate(): string | null {
-    const persentase = formData.persentase_diskon ?? 0;
-    if (persentase < 1 || persentase > 100) {
-      return "Persentase diskon harus antara 1-100";
-    }
-    if (!formData.tanggal_awal || !formData.tanggal_akhir) {
-      return "Tanggal awal dan akhir wajib diisi";
-    }
-    if (new Date(formData.tanggal_akhir) < new Date(formData.tanggal_awal)) {
-      return "Tanggal akhir tidak boleh sebelum tanggal awal";
-    }
-    return null;
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(formData: DiskonFormData) {
     setError(null);
-
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
     setSubmitting(true);
     try {
       const res = await updateAdminDiskon(diskonId, {
@@ -95,7 +61,7 @@ export default function EditDiskonPage() {
       } else {
         setError(res.message);
       }
-    } catch (err) {
+    } catch {
       setError("Gagal memperbarui diskon");
     } finally {
       setSubmitting(false);
@@ -103,7 +69,9 @@ export default function EditDiskonPage() {
   }
 
   if (loading) return <Spinner label="Memuat data diskon..." />;
-  if (!diskon) return <div className="text-center text-ink-600">Diskon tidak ditemukan</div>;
+  if (!diskon) {
+    return <EmptyState title="Diskon tidak ditemukan" description={error ?? "Data tidak tersedia."} />;
+  }
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -112,71 +80,19 @@ export default function EditDiskonPage() {
           <CardTitle>Edit Diskon: {diskon.nama_diskon}</CardTitle>
         </CardHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Nama Diskon"
-            name="nama_diskon"
-            value={formData.nama_diskon}
-            onChange={(e) =>
-              setFormData({ ...formData, nama_diskon: e.target.value })
-            }
-            required
-          />
-
-          <Input
-            label="Persentase Diskon (%)"
-            name="persentase_diskon"
-            type="number"
-            min="1"
-            max="100"
-            value={formData.persentase_diskon}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                persentase_diskon: parseInt(e.target.value) || 0,
-              })
-            }
-            hint="Nilai antara 1-100"
-            required
-          />
-
-          <Input
-            label="Tanggal Awal"
-            name="tanggal_awal"
-            type="date"
-            value={formData.tanggal_awal}
-            onChange={(e) =>
-              setFormData({ ...formData, tanggal_awal: e.target.value })
-            }
-            required
-          />
-
-          <Input
-            label="Tanggal Akhir"
-            name="tanggal_akhir"
-            type="date"
-            value={formData.tanggal_akhir}
-            onChange={(e) =>
-              setFormData({ ...formData, tanggal_akhir: e.target.value })
-            }
-            required
-          />
-
-          {error && (
-            <div className="rounded-md bg-status-cancelled/10 p-3 text-sm text-status-cancelled">
-              {error}
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <Button type="button" variant="ghost" onClick={() => router.back()}>
-              Batal
-            </Button>
-            <Button type="submit" isLoading={submitting}>
-              Simpan Perubahan
-            </Button>
-          </div>
-        </form>
+        <DiskonForm
+          initialData={{
+            nama_diskon: diskon.nama_diskon,
+            persentase_diskon: diskon.persentase_diskon,
+            tanggal_awal: toDateInputValue(diskon.tanggal_awal),
+            tanggal_akhir: toDateInputValue(diskon.tanggal_akhir),
+          }}
+          onSubmit={handleSubmit}
+          submitting={submitting}
+          error={error}
+          submitLabel="Simpan Perubahan"
+          onCancel={() => router.back()}
+        />
       </Card>
     </div>
   );

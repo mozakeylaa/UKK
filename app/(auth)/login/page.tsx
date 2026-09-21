@@ -7,15 +7,10 @@ import { login } from "@/lib/api/auth";
 import { isApiSuccess } from "@/lib/types/api";
 import { useAuth } from "@/lib/context/AuthContext";
 import type { Role } from "@/lib/types/auth";
-import { cn } from "@/lib/utils/cn";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-
-const ROLE_TABS: { label: string; value: Role }[] = [
-  { label: "Member", value: "member" },
-  { label: "Admin Space", value: "admin_space" },
-];
+import RoleSelector from "@/components/auth/RoleSelector";
+import AuthCardHeader from "@/components/auth/AuthCardHeader";
+import LoginFormFields from "@/components/auth/LoginFormFields";
 
 function LoginForm() {
   const router = useRouter();
@@ -78,16 +73,10 @@ function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-navy-gradient px-4 py-10">
       <Card className="w-full max-w-md">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-navy-800 font-display text-lg font-bold text-white">
-          CW
-        </div>
-
-        <h1 className="text-center font-display text-xl font-semibold text-ink-950">
-          Selamat Datang Kembali
-        </h1>
-        <p className="mb-6 mt-1 text-center text-sm text-ink-600">
-          Masuk sebagai member atau pengelola space.
-        </p>
+        <AuthCardHeader
+          title="Selamat Datang Kembali"
+          subtitle="Masuk sebagai member atau pengelola space."
+        />
 
         {registered && (
           <p className="mb-4 rounded-2xl bg-brand-50 px-3 py-2 text-center text-sm text-brand-700">
@@ -95,48 +84,24 @@ function LoginForm() {
           </p>
         )}
 
-        <div className="mb-6 flex rounded-full bg-surface-100 p-1">
-          {ROLE_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => {
-                setSelectedRole(tab.value);
-                setServerError(null);
-              }}
-              className={cn(
-                "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
-                selectedRole === tab.value
-                  ? "bg-white text-brand-700 shadow-sm"
-                  : "text-ink-600 hover:text-ink-950"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <RoleSelector
+          selectedRole={selectedRole}
+          onSelectRole={(role) => {
+            setSelectedRole(role);
+            setServerError(null);
+          }}
+        />
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            error={errors.username}
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={errors.password}
-          />
-
-          {serverError && <p className="text-sm text-status-cancelled">{serverError}</p>}
-
-          <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-            Masuk
-          </Button>
-        </form>
+        <LoginFormFields
+          username={username}
+          password={password}
+          errors={errors}
+          serverError={serverError}
+          isSubmitting={isSubmitting}
+          onChangeUsername={setUsername}
+          onChangePassword={setPassword}
+          onSubmit={handleSubmit}
+        />
 
         <div className="mt-5 flex flex-col gap-1 text-center text-sm text-ink-600">
           {selectedRole === "member" ? (
