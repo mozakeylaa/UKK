@@ -45,9 +45,16 @@ export default function DashboardShell({
           isCollapsed ? "w-20" : "w-64"
         )}
       >
-        {/* Brand Header */}
-        <div className="flex items-center justify-between px-4 py-6 border-b border-white/5">
-          <div className="flex items-center gap-3 overflow-hidden">
+        {/* Brand Header: Logo & Toggle */}
+        <div
+          className={cn(
+            "flex border-b border-white/5 transition-all duration-300 shrink-0",
+            isCollapsed
+              ? "flex-col items-center justify-center gap-3 px-2 py-4"
+              : "items-center justify-between px-4 py-6"
+          )}
+        >
+          <div className={cn("flex items-center gap-3 overflow-hidden", isCollapsed && "justify-center")}>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] font-display text-sm font-bold text-white shadow-lg shadow-[#FF5DA2]/30">
               CW
             </div>
@@ -66,7 +73,7 @@ export default function DashboardShell({
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
             title={isCollapsed ? "Buka Sidebar" : "Ciutkan Sidebar"}
           >
             {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
@@ -117,7 +124,7 @@ export default function DashboardShell({
           })}
         </nav>
 
-        {/* Footer Logout & User Desktop */}
+        {/* Footer User & Logout Desktop */}
         <div className="p-3 border-t border-white/10 shrink-0 bg-black/15">
           {!isCollapsed ? (
             <>
@@ -142,18 +149,19 @@ export default function DashboardShell({
               </button>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2">
+            /* Tampilan saat Collapsed: Avatar Profil + Tombol Logout Berdiri Sendiri */
+            <div className="flex flex-col items-center gap-3 py-1">
               <div
-                title={user?.nama ?? "Pengguna"}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] text-xs font-bold text-white shadow-inner"
+                title={`${user?.nama ?? "Pengguna"} (@${user?.username ?? "user"})`}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] text-sm font-bold text-white shadow-md cursor-default shrink-0"
               >
                 {getInitial(user?.nama)}
               </div>
               <button
                 type="button"
                 onClick={logout}
-                title="Keluar"
-                className="p-2 text-rose-300 hover:bg-rose-500/10 hover:text-rose-200 rounded-xl"
+                title="Keluar (Logout)"
+                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 hover:text-rose-100 transition-all border border-rose-500/20 shrink-0"
               >
                 <LogOut size={18} />
               </button>
@@ -175,7 +183,7 @@ export default function DashboardShell({
         <header className="hidden md:flex h-16 items-center justify-end px-8 py-4 bg-white/70 backdrop-blur-md border-b border-slate-100 sticky top-0 z-20">
           <div className="flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 border border-slate-200/80 shadow-sm">
             <Calendar size={13} className="text-[#FF5DA2]" />
-            <span>Sabtu, 21 Sep 2026</span>
+            <span>Selasa, 22 Sep 2026</span>
           </div>
         </header>
 
@@ -206,14 +214,14 @@ export default function DashboardShell({
           </button>
         </header>
 
-        {/* Main Page View (pb-28 agar konten terbawah tidak ketutup menu bottom bar HP) */}
+        {/* Main Page View */}
         <main className="flex-1 px-4 py-5 pb-28 md:px-8 md:py-8 md:pb-12">
           {children}
         </main>
       </div>
 
       {/* =========================================================================
-          3. BOTTOM NAVIGATION - MOBILE ONLY (Menu Dashboard, Reservasi, dll)
+          3. BOTTOM NAVIGATION - MOBILE ONLY
       ========================================================================= */}
       <nav className="fixed inset-x-0 bottom-0 z-50 flex md:hidden items-center justify-around border-t border-slate-200/80 bg-white/95 px-2 py-2 backdrop-blur-lg shadow-lg">
         {navItems.map((item) => {
