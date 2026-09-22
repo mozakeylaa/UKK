@@ -75,7 +75,6 @@ export default function HomePage() {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
-  // Fungsi smooth scroll ke target ID dan trigger efek focus glow
   const scrollToTarget = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
     const elem = document.getElementById(targetId);
@@ -91,9 +90,9 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#F8F9FD] text-slate-900 selection:bg-[#FF8FC2] selection:text-white scroll-smooth">
       {/* =========================================================================
-          FIRST VIEWPORT (LAYAR PERTAMA: NAVBAR + HERO + TICKER PAS DI BAWAH)
+          FIRST VIEWPORT (DESKTOP: h-screen overflow-hidden | MOBILE: min-h-screen)
       ========================================================================= */}
-      <div className="relative flex flex-col justify-between bg-navy-gradient text-white h-screen overflow-hidden">
+      <div className="relative flex flex-col justify-between bg-navy-gradient text-white min-h-screen lg:h-screen lg:overflow-hidden">
         {/* Top Navbar */}
         <header className="z-40 bg-[#12132E]/95 backdrop-blur-md border-b border-white/10 shrink-0">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -107,7 +106,7 @@ export default function HomePage() {
               </span>
             </Link>
 
-            {/* Center Navigation: Polos tanpa background kolom dengan smooth-glide trigger */}
+            {/* Center Navigation */}
             <nav className="hidden lg:flex items-center gap-8">
               <a
                 href="#about"
@@ -144,7 +143,7 @@ export default function HomePage() {
         </header>
 
         {/* Hero Content Area */}
-        <section className="relative flex-1 flex items-center px-6">
+        <section className="relative flex-1 flex items-center px-6 py-8 lg:py-0">
           <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#8494FF]/20 blur-3xl" />
           <div className="pointer-events-none absolute -left-20 top-1/2 h-80 w-80 rounded-full bg-[#FF8FC2]/15 blur-3xl" />
 
@@ -253,7 +252,7 @@ export default function HomePage() {
         </section>
 
         {/* =========================================================================
-            RUNNING TICKER - TEPAT DI DASAR LAYAR DESKTOP (BERJALAN KE ARAH KANAN)
+            RUNNING TICKER (DESKTOP: NEMPEL DI DASAR LAYAR | HP: MUNCUL PAS DI BAWAH HERO)
         ========================================================================= */}
         <div className="w-full overflow-hidden bg-[#12132E] py-3.5 border-t border-white/10 group cursor-default shrink-0">
           <div className="animate-marquee-right flex gap-8">
