@@ -107,13 +107,16 @@ export default function AdminReservasiPage() {
     };
   }, [fetchReservasi]);
 
-  // Handler jika terjadi tabrakan sesi role Member vs Admin
+  // Handler jika terjadi tabrakan sesi role Member vs Admin (hanya aktif jika yang login bukan admin_space)
+  const currentRole = Cookies.get(AUTH_ROLE_KEY);
   const isRoleConflict =
-    error &&
-    (error.toLowerCase().includes("member") ||
-      error.toLowerCase().includes("akses ditolak") ||
-      error.toLowerCase().includes("403") ||
-      error.toLowerCase().includes("admin_space"));
+    currentRole !== "admin_space" &&
+    Boolean(
+      error &&
+        (error.toLowerCase().includes("member") ||
+          error.toLowerCase().includes("akses ditolak") ||
+          error.toLowerCase().includes("403"))
+    );
 
   const [isSwitchingAdmin, setIsSwitchingAdmin] = useState(false);
 

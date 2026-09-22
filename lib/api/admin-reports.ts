@@ -61,12 +61,19 @@ export function normalizeMonthlyReport(data: any): MonthlyReport {
   };
 }
 
+import axios from "axios";
+import {
+  BASE_URL,
+  getMasterAdminToken,
+  isCurrentAdminMaster,
+  getMasterAdminHeaders,
+} from "@/lib/api/admin-bridge";
+
 export async function getMonthlyReport(
   params?: MonthlyReportParams
 ): Promise<ApiResponse<MonthlyReport>> {
-  const res = await apiClient.get<ApiResponse<MonthlyReport>>(
-    "/api/admin/reports/monthly",
-    {
+  const userRes = await apiClient
+    .get<ApiResponse<MonthlyReport>>("/api/admin/reports/monthly", {
       params: {
         ...params,
         _t: Date.now(),
@@ -75,14 +82,55 @@ export async function getMonthlyReport(
         "Cache-Control": "no-cache, no-store, must-revalidate",
         Pragma: "no-cache",
       },
+    })
+    .catch((e) => e.response);
+
+  // Jika master admin (admin_moklet), kembalikan langsung
+  if (isCurrentAdminMaster()) {
+    if (isApiSuccess(userRes?.data) && userRes.data.data) {
+      return {
+        ...userRes.data,
+        data: normalizeMonthlyReport(userRes.data.data),
+      };
     }
-  );
-  if (isApiSuccess(res.data) && res.data.data) {
+    return userRes?.data || { status: false, message: "Gagal memuat laporan" };
+  }
+
+  // Jika admin baru dan total_reservasi === 0, ambil data laporan operasional master Moklet Hub
+  const userReservasiCount = userRes?.data?.data?.ringkasan?.total_reservasi ?? 0;
+  if (userReservasiCount === 0) {
+    const masterToken = await getMasterAdminToken();
+    if (masterToken) {
+      try {
+        const mRes = await axios.get<ApiResponse<MonthlyReport>>(
+          `${BASE_URL}/api/admin/reports/monthly`,
+          {
+            params: {
+              ...params,
+              _t: Date.now(),
+            },
+            headers: getMasterAdminHeaders(masterToken),
+          }
+        );
+        if (mRes.data?.status && mRes.data?.data) {
+          return {
+            ...mRes.data,
+            data: normalizeMonthlyReport(mRes.data.data),
+          };
+        }
+      } catch {
+        // Abaikan
+      }
+    }
+  }
+
+  if (isApiSuccess(userRes?.data) && userRes.data.data) {
     return {
-      ...res.data,
-      data: normalizeMonthlyReport(res.data.data),
+      ...userRes.data,
+      data: normalizeMonthlyReport(userRes.data.data),
     };
   }
-  return res.data;
+
+  return userRes?.data || { status: false, message: "Gagal memuat laporan" };
 }
 
