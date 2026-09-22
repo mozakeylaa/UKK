@@ -24,6 +24,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   loginSuccess: (data: LoginData) => void;
+  updateUser: (partial: Partial<AuthUser>) => void;
   logout: () => void;
 }
 
@@ -73,6 +74,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(authUser);
   }
 
+  function updateUser(partial: Partial<AuthUser>) {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated: AuthUser = {
+        ...prev,
+        ...partial,
+      };
+      Cookies.set(AUTH_USER_KEY, JSON.stringify(updated), { expires: 7 });
+      return updated;
+    });
+  }
+
   function logout() {
     Cookies.remove(AUTH_TOKEN_KEY);
     Cookies.remove(AUTH_ROLE_KEY);
@@ -82,7 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, loginSuccess, logout }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, loginSuccess, updateUser, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

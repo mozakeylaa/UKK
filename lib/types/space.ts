@@ -21,7 +21,9 @@ export type Space = {
   harga_per_jam: number;
   foto?: string | null;
   foto_url?: string | null;
-  owner: SpaceOwner;
+  owner?: SpaceOwner | null;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type AvailabilityQuery = {

@@ -28,17 +28,61 @@ export type GetSpacesParams = {
   search?: string;
 };
 
+export function normalizeSpace(raw: any): Space {
+  if (!raw) return raw;
+  const ownerName =
+    raw.owner?.nama_coworking ||
+    raw.coworking_space?.nama ||
+    raw.nama_coworking ||
+    "Moklet Hub Coworking Space";
+
+  return {
+    ...raw,
+    id: Number(raw.id),
+    nama_space: raw.nama_space || raw.nama || `Space #${raw.id}`,
+    tipe: (raw.tipe as SpaceType) || "desk",
+    deskripsi: raw.deskripsi || "",
+    kapasitas: Number(raw.kapasitas) || 1,
+    harga_per_jam: Number(raw.harga_per_jam) || 0,
+    foto: raw.foto || null,
+    foto_url: raw.foto_url || null,
+    owner: {
+      ...(raw.owner || {}),
+      nama_coworking: ownerName,
+      nama_pemilik: raw.owner?.nama_pemilik,
+      telp: raw.owner?.telp,
+    },
+  };
+}
+
 export async function getSpaces(
   params?: GetSpacesParams
 ): Promise<ApiResponse<Space[]>> {
   const res = await apiClient.get<ApiResponse<Space[]>>("/api/spaces", {
     params,
   });
+
+  if (res.data && res.data.status && Array.isArray(res.data.data)) {
+    const normalized = res.data.data
+      .map(normalizeSpace)
+      .sort((a, b) => b.id - a.id); // Newest space on top!
+    return {
+      ...res.data,
+      data: normalized,
+    };
+  }
+
   return res.data;
 }
 
 export async function getSpaceById(id: number): Promise<ApiResponse<Space>> {
   const res = await apiClient.get<ApiResponse<Space>>(`/api/spaces/${id}`);
+  if (res.data && res.data.status && res.data.data) {
+    return {
+      ...res.data,
+      data: normalizeSpace(res.data.data),
+    };
+  }
   return res.data;
 }
 

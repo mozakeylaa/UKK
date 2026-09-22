@@ -164,7 +164,7 @@ export default function MemberDashboardPage() {
 
             {!isLoading && !error && spaces.length > 0 && (
               <div className="flex flex-col divide-y divide-slate-100">
-                {spaces.slice(0, 4).map((space) => (
+                {spaces.slice(0, 6).map((space) => (
                   <Link
                     key={space.id}
                     href={`/member/spaces/${space.id}`}

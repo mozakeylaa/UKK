@@ -1,11 +1,12 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LucideIcon, LogOut, Calendar, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useAuth } from "@/lib/context/AuthContext";
+import { getMemberAvatarUrl } from "@/lib/utils/format";
 
 export type NavItem = {
   label: string;
@@ -33,6 +34,11 @@ export default function DashboardShell({
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="flex min-h-screen w-full bg-[#F8F9FD] text-slate-800 antialiased selection:bg-[#6367FF]/20 selection:text-[#6367FF]">
@@ -122,14 +128,32 @@ export default function DashboardShell({
           {!isCollapsed ? (
             <>
               <div className="mb-2 flex items-center gap-3 rounded-2xl bg-white/5 p-3 backdrop-blur-sm border border-white/5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] font-display text-sm font-bold text-white shadow-inner">
-                  {getInitial(user?.nama)}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] overflow-hidden font-display text-sm font-bold text-white shadow-inner">
+                  {mounted && user ? (
+                    <img
+                      src={getMemberAvatarUrl({
+                        id: user.id,
+                        foto: user.foto,
+                        nama_member: user.nama,
+                        username: user.username,
+                      })}
+                      alt={user.nama ?? "User"}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <span>{getInitial(user?.nama)}</span>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-white">
-                    {user?.nama ?? "Pengguna"}
+                  <p className="truncate text-xs font-bold text-white" suppressHydrationWarning>
+                    {mounted && user?.nama ? user.nama : "Pengguna"}
                   </p>
-                  <p className="truncate text-[11px] text-slate-400">@{user?.username ?? "user"}</p>
+                  <p className="truncate text-[11px] text-slate-400" suppressHydrationWarning>
+                    @{mounted && user?.username ? user.username : "user"}
+                  </p>
                 </div>
               </div>
               <button
@@ -145,9 +169,25 @@ export default function DashboardShell({
             <div className="flex flex-col items-center gap-2">
               <div
                 title={user?.nama ?? "Pengguna"}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] text-xs font-bold text-white shadow-inner"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] text-xs font-bold text-white shadow-inner overflow-hidden"
               >
-                {getInitial(user?.nama)}
+                {mounted && user ? (
+                  <img
+                    src={getMemberAvatarUrl({
+                      id: user.id,
+                      foto: user.foto,
+                      nama_member: user.nama,
+                      username: user.username,
+                    })}
+                    alt={user.nama ?? "User"}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <span>{getInitial(user?.nama)}</span>
+                )}
               </div>
               <button
                 type="button"
@@ -182,12 +222,28 @@ export default function DashboardShell({
         {/* Top Header - Mobile Bar */}
         <header className="flex md:hidden items-center justify-between px-4 py-3.5 bg-white border-b border-slate-100 sticky top-0 z-20 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] text-xs font-bold text-white shadow-sm">
-              CW
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] text-xs font-bold text-white shadow-sm overflow-hidden">
+              {mounted && user ? (
+                <img
+                  src={getMemberAvatarUrl({
+                    id: user.id,
+                    foto: user.foto,
+                    nama_member: user.nama,
+                    username: user.username,
+                  })}
+                  alt={user.nama ?? "User"}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              ) : (
+                <span>CW</span>
+              )}
             </div>
             <div>
-              <span className="font-display text-sm font-bold text-slate-900 leading-tight block">
-                Co-Work
+              <span className="font-display text-sm font-bold text-slate-900 leading-tight block truncate max-w-[160px]" suppressHydrationWarning>
+                {mounted && user?.nama ? user.nama.split(" ")[0] : "Co-Work"}
               </span>
               <span className="text-[10px] font-semibold text-slate-400">
                 {roleLabel === "Member" ? "Member Portal" : "Admin Space"}
