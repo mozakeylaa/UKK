@@ -78,7 +78,7 @@ export default function SpaceDetailPage({
   }
 
   function handleLanjutkan() {
-    if (!result?.available) return;
+    if (!result?.is_available && !result?.available) return;
     const query = new URLSearchParams({
       id_space: String(spaceId),
       tanggal,
@@ -134,6 +134,7 @@ export default function SpaceDetailPage({
 
       {/* Availability Checker Component */}
       <AvailabilityCheckCard
+        spaceId={spaceId}
         tanggal={tanggal}
         jamMulai={jamMulai}
         durasiJam={durasiJam}

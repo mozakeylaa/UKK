@@ -56,3 +56,24 @@ export async function getProfile(): Promise<ApiResponse<ProfileData>> {
   );
   return res.data;
 }
+
+export interface UpdateMemberProfilePayload {
+  nama_member: string;
+  instansi?: string;
+  alamat: string;
+  telp: string;
+  foto?: string;
+}
+
+export async function updateMemberProfile(
+  payload: UpdateMemberProfilePayload
+): Promise<ApiResponse<MemberProfile>> {
+  const res = await fetch("/api/member/profile", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}

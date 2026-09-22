@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { LucideIcon, LogOut, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useAuth } from "@/lib/context/AuthContext";
+import { getMemberAvatarUrl } from "@/lib/utils/format";
 
 export type NavItem = {
   label: string;
@@ -93,8 +94,19 @@ function DashboardShell({ navItems, roleLabel, children }: DashboardShellProps) 
         {/* User Footer & Logout */}
         <div className="p-4 border-t border-white/10">
           <div className="mb-2 flex items-center gap-3 rounded-2xl bg-white/5 p-3 backdrop-blur-sm">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] font-display text-sm font-bold text-white shadow-inner">
-              {getInitial(user?.nama)}
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#6367FF] to-[#8494FF] overflow-hidden font-display text-sm font-bold text-white shadow-inner">
+              <img
+                src={getMemberAvatarUrl({
+                  foto: user?.foto,
+                  nama_member: user?.nama,
+                  username: user?.username,
+                })}
+                alt={user?.nama ?? "User"}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-bold text-white">
@@ -126,8 +138,19 @@ function DashboardShell({ navItems, roleLabel, children }: DashboardShellProps) 
         {/* Topbar - Mobile */}
         <header className="flex items-center justify-between bg-navy-gradient px-4 py-4 md:hidden">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] font-display text-xs font-bold text-white">
-              CW
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF8FC2] to-[#FF5DA2] overflow-hidden font-display text-xs font-bold text-white">
+              <img
+                src={getMemberAvatarUrl({
+                  foto: user?.foto,
+                  nama_member: user?.nama,
+                  username: user?.username,
+                })}
+                alt={user?.nama ?? "User"}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLElement).style.display = "none";
+                }}
+              />
             </div>
             <div>
               <p className="font-display text-sm font-bold text-white">

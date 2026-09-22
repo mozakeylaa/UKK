@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import type { AdminSpace } from "@/lib/types/admin";
-import { formatRupiah } from "@/lib/utils/format";
+import { formatRupiah, getSpaceImageUrl } from "@/lib/utils/format";
 import { Card } from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
@@ -22,21 +22,19 @@ export default function SpaceGridCard({
 }: SpaceGridCardProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {spaces.map((space) => (
-        <Card key={space.id} className="flex flex-col gap-3 p-0 overflow-hidden">
-          <div className="aspect-video w-full bg-surface-100">
-            {space.foto_url ? (
+      {spaces.map((space) => {
+        const imageUrl = getSpaceImageUrl(space);
+
+        return (
+          <Card key={space.id} className="flex flex-col gap-3 p-0 overflow-hidden">
+            <div className="aspect-video w-full bg-surface-100">
               <img
-                src={space.foto_url}
+                src={imageUrl}
                 alt={space.nama_space}
                 className="h-full w-full object-cover"
+                loading="lazy"
               />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-xs text-ink-600">
-                Tidak ada foto
-              </div>
-            )}
-          </div>
+            </div>
           <div className="flex flex-1 flex-col gap-2 px-4 pb-4">
             <div>
               <p className="font-display text-base font-semibold text-ink-950">
@@ -69,7 +67,8 @@ export default function SpaceGridCard({
             </div>
           </div>
         </Card>
-      ))}
-    </div>
+      );
+    })}
+  </div>
   );
 }

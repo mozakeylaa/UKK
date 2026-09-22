@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Users, Building2 } from "lucide-react";
+import { Users } from "lucide-react";
 import type { Space } from "@/lib/types/space";
-import { formatRupiah } from "@/lib/utils/format";
+import { formatRupiah, getSpaceImageUrl } from "@/lib/utils/format";
 
 interface SpaceCatalogGridProps {
   spaces: Space[];
@@ -10,38 +10,35 @@ interface SpaceCatalogGridProps {
 export default function SpaceCatalogGrid({ spaces }: SpaceCatalogGridProps) {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {spaces.map((space, index) => (
-        <Link
-          key={space.id}
-          href={`/member/spaces/${space.id}`}
-          className="group block opacity-0"
-          style={{
-            animation: `fadeUp 0.5s ease ${0.05 + Math.min(index, 8) * 0.05}s forwards`,
-          }}
-        >
-          <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-[#6367FF]/10">
-            {/* Image Preview Container */}
-            <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
-              {space.foto_url ? (
+      {spaces.map((space, index) => {
+        const imageUrl = getSpaceImageUrl(space);
+
+        return (
+          <Link
+            key={space.id}
+            href={`/member/spaces/${space.id}`}
+            className="group block opacity-0"
+            style={{
+              animation: `fadeUp 0.5s ease ${0.05 + Math.min(index, 8) * 0.05}s forwards`,
+            }}
+          >
+            <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-white border border-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-[#6367FF]/10">
+              {/* Image Container - Always Full & Real */}
+              <div className="relative aspect-video w-full overflow-hidden bg-slate-100">
                 <img
-                  src={space.foto_url}
+                  src={imageUrl}
                   alt={space.nama_space}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
                 />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-[#EEEFFF]/60 text-slate-400">
-                  <Building2 size={24} className="text-[#8494FF]" />
-                  <span className="text-[11px] font-medium">Foto belum tersedia</span>
-                </div>
-              )}
 
-              {/* Badge Pemilik / Coworking Space */}
-              {space.owner?.nama_coworking && (
-                <span className="absolute left-3 top-3 rounded-full bg-[#12132E]/85 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md shadow-sm">
-                  {space.owner.nama_coworking}
-                </span>
-              )}
-            </div>
+                {/* Badge Pemilik / Coworking Space */}
+                {space.owner?.nama_coworking && (
+                  <span className="absolute left-3 top-3 rounded-full bg-[#12132E]/85 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md shadow-sm">
+                    {space.owner.nama_coworking}
+                  </span>
+                )}
+              </div>
 
             {/* Space Details */}
             <div className="flex flex-1 flex-col justify-between p-5">
@@ -71,7 +68,8 @@ export default function SpaceCatalogGrid({ spaces }: SpaceCatalogGridProps) {
             </div>
           </div>
         </Link>
-      ))}
-    </div>
-  );
+      );
+    })}
+  </div>
+);
 }

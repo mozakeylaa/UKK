@@ -103,11 +103,22 @@ export default function ETicketPage({
       </div>
 
       {/* Instruksi Tambahan (Hidden saat Print) */}
-      <div className="rounded-2xl bg-white p-4 border border-slate-100 shadow-sm flex items-start gap-3 text-xs text-slate-500 print:hidden">
-        <ShieldCheck size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          QR Code ini berlaku untuk satu kali check-in sesuai jadwal reservasi. Pastikan kecerahan layar smartphone kamu cukup saat melakukan scanning.
-        </p>
+      <div className="rounded-2xl bg-white p-5 border border-slate-100 shadow-sm flex flex-col gap-2.5 text-xs text-slate-600 print:hidden">
+        <div className="flex items-center gap-2 font-bold text-slate-900">
+          <ShieldCheck size={18} className="text-emerald-500 shrink-0" />
+          <span>Petunjuk & Tata Tertib Check-In</span>
+        </div>
+        {tiket.instruksi_check_in && tiket.instruksi_check_in.length > 0 ? (
+          <ul className="list-disc pl-5 space-y-1.5 text-slate-500 leading-relaxed">
+            {tiket.instruksi_check_in.map((instruksi, idx) => (
+              <li key={idx}>{instruksi}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="leading-relaxed text-slate-500">
+            QR Code ini berlaku untuk satu kali check-in sesuai jadwal reservasi. Pastikan kecerahan layar smartphone kamu cukup saat melakukan scanning di resepsionis.
+          </p>
+        )}
       </div>
     </div>
   );

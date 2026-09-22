@@ -16,6 +16,7 @@ export default function AdminReservasiPage() {
   const [spaces, setSpaces] = useState<AdminSpace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Set default filter ke undefined agar semua data langsung diambil tanpa terpotong bulan/tahun
   const [filter, setFilter] = useState<AdminReservasiFilter>({
@@ -53,6 +54,18 @@ export default function AdminReservasiPage() {
     }
   }
 
+  // Filter reservasi berdasarkan kata kunci pencarian (Nama Member, Telp, Instansi, Kode Booking, Nama Space)
+  const displayedReservasiList = reservasiList.filter((r) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    const matchMember = r.member?.nama_member?.toLowerCase().includes(q);
+    const matchInstansi = r.member?.instansi?.toLowerCase().includes(q);
+    const matchTelp = r.member?.telp?.toLowerCase().includes(q);
+    const matchKode = r.kode_booking?.toLowerCase().includes(q);
+    const matchSpace = r.space?.nama_space?.toLowerCase().includes(q);
+    return Boolean(matchMember || matchInstansi || matchTelp || matchKode || matchSpace);
+  });
+
   return (
     <div className="flex flex-col gap-6 pb-12">
       {/* Header Info */}
@@ -62,22 +75,28 @@ export default function AdminReservasiPage() {
             Kelola Reservasi
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Daftar seluruh pemesanan masuk, konfirmasi jadwal, dan status sewa ruangan.
+            Daftar seluruh pemesanan masuk, konfirmasi jadwal, dan status sewa ruangan oleh member.
           </p>
         </div>
 
         <div className="inline-flex items-center gap-2 self-start rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-600 border border-slate-200/80 shadow-sm">
           <CalendarCheck size={14} className="text-[#6367FF]" />
-          <span>Total: {reservasiList.length} Reservasi</span>
+          <span>
+            {searchQuery
+              ? `Menampilkan ${displayedReservasiList.length} dari ${reservasiList.length}`
+              : `Total: ${reservasiList.length} Reservasi`}
+          </span>
         </div>
       </div>
 
-      {/* Filter Card */}
+      {/* Filter & Search Card */}
       <div className="rounded-3xl bg-white p-5 sm:p-6 border border-slate-100 shadow-sm">
         <ReservasiFilterCard
           filter={filter}
           spaces={spaces}
+          searchQuery={searchQuery}
           onFilterChange={setFilter}
+          onSearchQueryChange={setSearchQuery}
         />
       </div>
 
@@ -94,19 +113,23 @@ export default function AdminReservasiPage() {
         <div className="flex flex-col items-center justify-center py-20">
           <Spinner label="Memuat data reservasi..." />
         </div>
-      ) : reservasiList.length === 0 ? (
+      ) : displayedReservasiList.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl bg-white p-12 text-center border border-slate-100 shadow-sm">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEEFFF] text-[#6367FF]">
             <Inbox size={26} />
           </div>
-          <h3 className="mt-4 font-display text-base font-bold text-slate-900">Tidak Ada Reservasi</h3>
+          <h3 className="mt-4 font-display text-base font-bold text-slate-900">
+            {searchQuery ? "Reservasi Tidak Ditemukan" : "Tidak Ada Reservasi"}
+          </h3>
           <p className="mt-1 text-xs text-slate-500 max-w-sm">
-            Belum ada data reservasi yang sesuai dengan kriteria filter yang kamu tentukan.
+            {searchQuery
+              ? `Tidak ada reservasi yang cocok dengan kata kunci "${searchQuery}". Coba gunakan nama member atau kode booking lain.`
+              : "Belum ada data reservasi yang sesuai dengan kriteria filter yang kamu tentukan."}
           </p>
         </div>
       ) : (
         <div className="rounded-3xl bg-white p-5 sm:p-6 border border-slate-100 shadow-sm overflow-hidden">
-          <ReservasiTableCard reservasiList={reservasiList} />
+          <ReservasiTableCard reservasiList={displayedReservasiList} />
         </div>
       )}
     </div>

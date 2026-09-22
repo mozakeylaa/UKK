@@ -13,6 +13,7 @@ import {
   Layers
 } from "lucide-react";
 import { useAuth } from "@/lib/context/AuthContext";
+import { useAdminReservasi } from "@/lib/context/AdminReservasiContext";
 
 type FilterTab = "semua" | "menunggu" | "aktif";
 
@@ -57,6 +58,7 @@ const SAMPLE_RESERVATIONS = [
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
+  const { pendingCount } = useAdminReservasi();
   const [filter, setFilter] = useState<FilterTab>("semua");
 
   const filteredReservations = SAMPLE_RESERVATIONS.filter((item) => {
@@ -91,7 +93,7 @@ export default function AdminDashboardPage() {
           </div>
           <div className="mt-4">
             <p className="text-xs font-medium text-white/80">Belum dikonfirmasi</p>
-            <p className="text-2xl font-bold font-display mt-0.5">4</p>
+            <p className="text-2xl font-bold font-display mt-0.5">{pendingCount}</p>
           </div>
         </div>
 

@@ -27,12 +27,30 @@ export type Space = {
 export type AvailabilityQuery = {
   id_space: number;
   tanggal: string; // YYYY-MM-DD
-  jam_mulai: string; // HH:mm
+  jam_mulai?: string; // HH:mm
+  durasi_jam?: number;
+};
+
+export type AvailabilityConflict = {
+  reservasi_id?: number;
+  tanggal?: string;
+  jam_mulai: string;
   durasi_jam: number;
+  jam_selesai?: string;
+  status?: string;
+};
+
+export type BookedSlot = {
+  jam_mulai: string;
+  jam_selesai: string;
+  durasi_jam: number;
+  status: string;
 };
 
 export type AvailabilityResult = {
+  is_available: boolean;
   available: boolean;
   jam_selesai: string;
   estimasi_total: number;
+  conflicts: AvailabilityConflict[];
 };

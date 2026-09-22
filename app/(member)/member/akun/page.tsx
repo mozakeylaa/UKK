@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import { UserCheck, Shield, AlertTriangle } from "lucide-react";
-import { getProfile } from "@/lib/api/auth";
+import { getProfile, updateMemberProfile } from "@/lib/api/auth";
 import { uploadFile } from "@/lib/api/upload";
 import apiClient from "@/lib/api/client";
 import { isApiSuccess } from "@/lib/types/api";
 import { useAuth } from "@/lib/context/AuthContext";
 import type { ProfileData } from "@/lib/types/auth";
-import { getImageUrl } from "@/lib/utils/format";
+import { getImageUrl, getMemberAvatarUrl } from "@/lib/utils/format";
 import Spinner from "@/components/ui/Spinner";
 import ProfileAvatarCard from "@/components/member/profile/ProfileAvatarCard";
 import ProfileDetailView from "@/components/member/profile/ProfileDetailView";
@@ -84,36 +84,24 @@ export default function MemberAkunPage() {
     if (!profile?.member?.id) return;
 
     setIsSaving(true);
-    const memberId = profile.member.id;
-
-    const payload = {
-      nama_member: editForm.nama_member,
-      instansi: editForm.instansi,
-      alamat: editForm.alamat,
-      telp: editForm.telp,
-      no_telepon: editForm.telp,
-      foto: editForm.foto,
-      foto_profil: editForm.foto,
-    };
 
     try {
-      let success = false;
-      try {
-        const res = await apiClient.put(`/api/members/${memberId}`, payload);
-        if (res.status === 200 || res.data?.status) success = true;
-      } catch {
-        const resFallback = await apiClient.put(`/api/admin/members/${memberId}`, payload);
-        if (resFallback.status === 200 || resFallback.data?.status) success = true;
-      }
+      const res = await updateMemberProfile({
+        nama_member: editForm.nama_member,
+        instansi: editForm.instansi,
+        alamat: editForm.alamat,
+        telp: editForm.telp,
+        foto: editForm.foto,
+      });
 
-      if (success) {
+      if (isApiSuccess(res) || res.status) {
         await fetchProfileData();
         setIsEditing(false);
       } else {
-        alert("Gagal memperbarui profil.");
+        alert(res.message || "Gagal memperbarui profil.");
       }
     } catch (err: any) {
-      alert(err?.response?.data?.message || err?.message || "Gagal memperbarui data profil.");
+      alert(err?.message || "Gagal memperbarui data profil.");
     } finally {
       setIsSaving(false);
     }
@@ -147,7 +135,7 @@ export default function MemberAkunPage() {
 
   const member = profile.member;
   const currentPhoto = isEditing ? editForm.foto : (member.foto || member.foto_profil || member.foto_url);
-  const photoUrl = getImageUrl(currentPhoto, "members");
+  const photoUrl = getImageUrl(currentPhoto, "members") || getMemberAvatarUrl(member);
 
   return (
     <div className="flex flex-col gap-6 pb-12">

@@ -21,17 +21,34 @@ export type UpdateDiskonPayload = Partial<CreateDiskonPayload>;
 export type ReservasiMember = {
   id: number;
   nama_member: string;
-  username: string;
+  username?: string;
   instansi?: string;
+  alamat?: string;
   telp?: string;
+  id_user?: number;
+  foto?: string | null;
+  foto_url?: string | null;
+};
+
+export type DetailReservasi = {
+  id?: number;
+  id_reservasi?: number;
+  id_space: number;
+  id_diskon?: number | null;
+  total_harga: number;
+  space?: Space;
+  diskon?: Diskon;
 };
 
 export type Reservasi = {
   id: number;
   kode_booking: string;
   id_space: number;
+  id_owner?: number;
+  id_member?: number;
   space?: Space;
   member?: ReservasiMember;
+  detail_reservasi?: DetailReservasi[];
   tanggal_reservasi: string;
   jam_mulai: string;
   jam_selesai: string;
@@ -42,9 +59,11 @@ export type Reservasi = {
   potongan_diskon: number;
   total_bayar: number;
   status: ReservasiStatus;
+  status_label?: string;
   checked_in_at?: string | null;
   checked_out_at?: string | null;
   created_at?: string;
+  updated_at?: string;
 };
 
 export type CreateReservasiPayload = {
@@ -64,6 +83,26 @@ export type HistoryResponse = {
 
 export type ETicket = Reservasi & {
   qr_code_payload: string;
+  ticket_title?: string;
+  instruksi_check_in?: string[];
+  coworking_space?: {
+    nama: string;
+    penanggung_jawab?: string;
+    telp?: string;
+  };
+  jadwal?: {
+    tanggal: string;
+    jam_mulai: string;
+    durasi: string;
+  };
+  rincian_biaya?: {
+    harga_per_jam: number;
+    durasi_jam: number;
+    subtotal: number;
+    diskon_nama?: string | null;
+    diskon_persen?: string | null;
+    total_pembayaran: number;
+  };
 };
 
 export type AdminReservasiFilter = {

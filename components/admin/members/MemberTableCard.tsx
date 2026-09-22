@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Member } from "@/lib/types/member";
+import { getMemberAvatarUrl } from "@/lib/utils/format";
 import Button from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Table from "@/components/ui/Table";
@@ -18,7 +19,19 @@ export default function MemberTableCard({
       <Table<Member>
         columns={[
           { header: "Username", accessor: (row) => row.username },
-          { header: "Nama", accessor: (row) => row.nama_member },
+          {
+            header: "Nama",
+            accessor: (row) => (
+              <div className="flex items-center gap-3">
+                <img
+                  src={getMemberAvatarUrl(row)}
+                  alt={row.nama_member}
+                  className="h-8 w-8 rounded-full object-cover border border-slate-200"
+                />
+                <span className="font-medium text-ink-950">{row.nama_member}</span>
+              </div>
+            ),
+          },
           { header: "Instansi", accessor: (row) => row.instansi },
           { header: "Telepon", accessor: (row) => row.telp },
           {

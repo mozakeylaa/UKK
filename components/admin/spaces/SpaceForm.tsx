@@ -139,8 +139,11 @@ export default function SpaceForm({
       <ImageUpload
         target="spaces"
         label="Foto space"
-        value={fotoUrl}
-        onUploaded={(filename) => setFoto(filename)}
+        value={fotoUrl || foto}
+        onUploaded={(filename) => {
+          setFoto(filename);
+          setFotoUrl(filename);
+        }}
       />
 
       {serverError && <p className="text-sm text-status-cancelled">{serverError}</p>}

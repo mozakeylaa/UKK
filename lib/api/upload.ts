@@ -5,6 +5,7 @@ export type UploadTarget = "members" | "spaces";
 
 export type UploadResult = {
   filename: string;
+  url?: string;
   foto_url?: string;
 };
 
