@@ -94,6 +94,60 @@ export function getImageUrl(
   return `${normalizedBase}/uploads/${folder}/${cleanPath}`;
 }
 
+export function getStoredSpacePhoto(spaceId?: number | string | null): string | null {
+  if (typeof window === "undefined" || !spaceId) return null;
+  try {
+    return localStorage.getItem(`coworking_space_photo_${spaceId}`);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredSpacePhoto(spaceId: number | string | undefined, filenameOrUrl: string) {
+  if (typeof window === "undefined" || !spaceId || !filenameOrUrl) return;
+  try {
+    localStorage.setItem(`coworking_space_photo_${spaceId}`, filenameOrUrl);
+  } catch {
+    // ignore
+  }
+}
+
+export function removeStoredSpacePhoto(spaceId: number | string | undefined) {
+  if (typeof window === "undefined" || !spaceId) return;
+  try {
+    localStorage.removeItem(`coworking_space_photo_${spaceId}`);
+  } catch {
+    // ignore
+  }
+}
+
+export function getStoredMemberAvatar(memberId?: number | string | null): string | null {
+  if (typeof window === "undefined" || !memberId) return null;
+  try {
+    return localStorage.getItem(`coworking_member_avatar_${memberId}`);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredMemberAvatar(memberId: number | string | undefined, filenameOrUrl: string) {
+  if (typeof window === "undefined" || !memberId || !filenameOrUrl) return;
+  try {
+    localStorage.setItem(`coworking_member_avatar_${memberId}`, filenameOrUrl);
+  } catch {
+    // ignore
+  }
+}
+
+export function removeStoredMemberAvatar(memberId: number | string | undefined) {
+  if (typeof window === "undefined" || !memberId) return;
+  try {
+    localStorage.removeItem(`coworking_member_avatar_${memberId}`);
+  } catch {
+    // ignore
+  }
+}
+
 export function getSpaceImageUrl(space?: {
   id?: number;
   foto?: string | null;
@@ -104,13 +158,22 @@ export function getSpaceImageUrl(space?: {
     return DEFAULT_SPACE_IMAGES.desk[0];
   }
 
-  // 1. Coba ambil dari foto_url atau foto jika ada
+  // 1. Coba ambil dari foto_url atau foto jika ada dari backend
   const resolved = getImageUrl(space.foto_url || space.foto, "spaces");
   if (resolved) {
     return resolved;
   }
 
-  // 2. Jika null/kosong, berikan foto berkualitas tinggi terkurasi sesuai tipe space
+  // 2. Cek apakah ada foto yang pernah diunggah admin untuk space ini di penyimpanan persisten
+  if (space.id) {
+    const custom = getStoredSpacePhoto(space.id);
+    if (custom) {
+      const resolvedCustom = getImageUrl(custom, "spaces");
+      if (resolvedCustom) return resolvedCustom;
+    }
+  }
+
+  // 3. Jika null/kosong dan belum pernah diunggah, berikan foto berkualitas tinggi terkurasi sesuai tipe space
   const tipe = space.tipe || "desk";
   const list = DEFAULT_SPACE_IMAGES[tipe] || DEFAULT_SPACE_IMAGES.desk;
   const index = Math.abs((space.id ?? 0) % list.length);
@@ -135,16 +198,12 @@ export function getMemberAvatarUrl(member?: {
     return resolved;
   }
 
-  // Cek hybrid persistence di localStorage HANYA untuk member ID yang spesifik
-  if (typeof window !== "undefined" && member.id) {
-    try {
-      const stored = localStorage.getItem(`coworking_member_avatar_${member.id}`);
-      if (stored) {
-        const resolvedStored = getImageUrl(stored, "members");
-        if (resolvedStored) return resolvedStored;
-      }
-    } catch {
-      // localStorage tidak tersedia
+  // Cek custom avatar di penyimpanan persisten untuk member ID yang spesifik
+  if (member.id) {
+    const custom = getStoredMemberAvatar(member.id);
+    if (custom) {
+      const resolvedCustom = getImageUrl(custom, "members");
+      if (resolvedCustom) return resolvedCustom;
     }
   }
 

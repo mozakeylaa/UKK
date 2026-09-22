@@ -10,6 +10,8 @@ import type {
   ProfileData,
 } from "@/lib/types/auth";
 
+import { getStoredMemberAvatar, setStoredMemberAvatar, getImageUrl } from "@/lib/utils/format";
+
 export type {
   LoginData,
   LoginPayload,
@@ -54,6 +56,15 @@ export async function getProfile(): Promise<ApiResponse<ProfileData>> {
   const res = await apiClient.get<ApiResponse<ProfileData>>(
     "/api/auth/profile"
   );
+  if (res.data && res.data.status && res.data.data?.member) {
+    const member = res.data.data.member;
+    const stored = getStoredMemberAvatar(member.id);
+    const foto = member.foto || stored || null;
+    member.foto = foto || undefined;
+    if (!member.foto_url && foto) {
+      member.foto_url = getImageUrl(foto, "members") || undefined;
+    }
+  }
   return res.data;
 }
 
@@ -69,27 +80,30 @@ export async function updateMemberProfile(
   payload: UpdateMemberProfilePayload
 ): Promise<ApiResponse<MemberProfile>> {
   try {
-    const res = await apiClient.post<ApiResponse<MemberProfile>>(
-      "/api/member/profile",
-      payload
-    );
-    return res.data;
-  } catch (err: any) {
-    if (err?.response?.status === 404) {
-      try {
-        const fallbackRes = await apiClient.post<ApiResponse<MemberProfile>>(
-          "/api/profile",
-          payload
-        );
-        return fallbackRes.data;
-      } catch {
-        const patchRes = await apiClient.patch<ApiResponse<MemberProfile>>(
-          "/api/member/profile",
-          payload
-        );
-        return patchRes.data;
+    const res = await fetch("/api/member/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const data: ApiResponse<MemberProfile> = await res.json();
+    if (data && "data" in data && data.data && payload.foto) {
+      const memberId = data.data.id;
+      if (memberId) {
+        setStoredMemberAvatar(memberId, payload.foto);
       }
     }
-    throw err;
+    return data;
+  } catch (err: any) {
+    try {
+      const fallbackRes = await apiClient.post<ApiResponse<MemberProfile>>(
+        "/api/member/profile",
+        payload
+      );
+      return fallbackRes.data;
+    } catch {
+      throw err;
+    }
   }
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, UserPlus } from "lucide-react";
 import { createAdminMember } from "@/lib/api/admin-members";
 import { isApiSuccess } from "@/lib/types/api";
+import { setStoredMemberAvatar } from "@/lib/utils/format";
 import MemberForm, { MemberFormData } from "@/components/admin/members/MemberForm";
 
 export default function TambahMemberPage() {
@@ -28,6 +29,9 @@ export default function TambahMemberPage() {
         foto: data.foto,
       });
       if (isApiSuccess(res)) {
+        if (data.foto && res.data?.id) {
+          setStoredMemberAvatar(res.data.id, data.foto);
+        }
         router.push("/admin/members");
       } else {
         setError(res.message);

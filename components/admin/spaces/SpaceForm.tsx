@@ -92,7 +92,7 @@ export default function SpaceForm({
       harga_per_jam: Number(hargaPerJam),
       kapasitas: Number(kapasitas),
       deskripsi,
-      foto,
+      foto: foto?.trim() ? foto.trim() : undefined,
     });
   }
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Edit3, AlertTriangle } from "lucide-react";
 import { getAdminSpaceById, updateAdminSpace } from "@/lib/api/admin-spaces";
 import { isApiSuccess } from "@/lib/types/api";
+import { getStoredSpacePhoto, setStoredSpacePhoto, getImageUrl } from "@/lib/utils/format";
 import Spinner from "@/components/ui/Spinner";
 import SpaceForm, { SpaceFormData } from "@/components/admin/spaces/SpaceForm";
 
@@ -24,14 +25,17 @@ export default function EditSpacePage({ params }: { params: Promise<{ id: string
     if (!spaceId) return;
     getAdminSpaceById(spaceId).then((res) => {
       if (isApiSuccess(res)) {
+        const customPhoto = getStoredSpacePhoto(spaceId);
+        const resolvedFoto = res.data.foto || customPhoto;
+
         setInitialData({
           nama_space: res.data.nama_space,
           tipe: res.data.tipe,
           harga_per_jam: res.data.harga_per_jam,
           kapasitas: res.data.kapasitas,
           deskripsi: res.data.deskripsi,
-          foto: res.data.foto ?? undefined,
-          foto_url: res.data.foto_url ?? undefined,
+          foto: resolvedFoto ?? undefined,
+          foto_url: res.data.foto_url || (resolvedFoto ? getImageUrl(resolvedFoto, "spaces") ?? undefined : undefined),
         });
       } else {
         setLoadError(res.message);
@@ -46,6 +50,9 @@ export default function EditSpacePage({ params }: { params: Promise<{ id: string
     try {
       const res = await updateAdminSpace(spaceId, data);
       if (isApiSuccess(res)) {
+        if (data.foto) {
+          setStoredSpacePhoto(spaceId, data.foto);
+        }
         router.push("/admin/spaces");
       } else {
         setServerError(res.message);

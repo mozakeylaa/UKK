@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, PlusCircle, Building2 } from "lucide-react";
 import { createAdminSpace } from "@/lib/api/admin-spaces";
 import { isApiSuccess } from "@/lib/types/api";
+import { setStoredSpacePhoto } from "@/lib/utils/format";
 import SpaceForm, { SpaceFormData } from "@/components/admin/spaces/SpaceForm";
 
 export default function TambahSpacePage() {
@@ -19,6 +20,9 @@ export default function TambahSpacePage() {
     try {
       const res = await createAdminSpace(data);
       if (isApiSuccess(res)) {
+        if (data.foto && res.data?.id) {
+          setStoredSpacePhoto(res.data.id, data.foto);
+        }
         router.push("/admin/spaces");
       } else {
         setServerError(res.message);

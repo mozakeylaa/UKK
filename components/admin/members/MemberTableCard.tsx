@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Member } from "@/lib/types/member";
-import { getImageUrl, getMemberAvatarUrl } from "@/lib/utils/format";
+import { getImageUrl, getStoredMemberAvatar } from "@/lib/utils/format";
 import Button from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Table from "@/components/ui/Table";
@@ -28,13 +28,9 @@ function getMemberPhotoUrl(member: Member): string | null {
   const resolved = getImageUrl(candidate, "members");
   if (resolved) return resolved;
 
-  if (typeof window !== "undefined" && member.id) {
-    try {
-      const stored = localStorage.getItem(`coworking_member_avatar_${member.id}`);
-      if (stored) return getImageUrl(stored, "members");
-    } catch {
-      // ignore
-    }
+  if (member.id) {
+    const stored = getStoredMemberAvatar(member.id);
+    if (stored) return getImageUrl(stored, "members");
   }
 
   return null;

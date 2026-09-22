@@ -5,6 +5,23 @@ import type {
   CreateMemberPayload,
   UpdateMemberPayload,
 } from "@/lib/types/member";
+import {
+  getStoredMemberAvatar,
+  setStoredMemberAvatar,
+  removeStoredMemberAvatar,
+  getImageUrl,
+} from "@/lib/utils/format";
+
+function normalizeAdminMember(m: Member): Member {
+  if (!m) return m;
+  const stored = getStoredMemberAvatar(m.id);
+  const foto = m.foto || stored || null;
+  return {
+    ...m,
+    foto,
+    foto_url: m.foto_url || (foto ? getImageUrl(foto, "members") : null),
+  };
+}
 
 export async function getAdminMembers(
   search?: string
@@ -13,6 +30,12 @@ export async function getAdminMembers(
     "/api/admin/members",
     { params: search ? { search } : undefined }
   );
+  if (res.data && res.data.status && Array.isArray(res.data.data)) {
+    return {
+      ...res.data,
+      data: res.data.data.map(normalizeAdminMember),
+    };
+  }
   return res.data;
 }
 
@@ -22,6 +45,12 @@ export async function getAdminMemberDetail(
   const res = await apiClient.get<ApiResponse<Member>>(
     `/api/admin/members/${id}`
   );
+  if (res.data && res.data.status && res.data.data) {
+    return {
+      ...res.data,
+      data: normalizeAdminMember(res.data.data),
+    };
+  }
   return res.data;
 }
 
@@ -32,6 +61,15 @@ export async function createAdminMember(
     "/api/admin/members",
     payload
   );
+  if (res.data && res.data.status && res.data.data) {
+    if (payload.foto && res.data.data.id) {
+      setStoredMemberAvatar(res.data.data.id, payload.foto);
+    }
+    return {
+      ...res.data,
+      data: normalizeAdminMember(res.data.data),
+    };
+  }
   return res.data;
 }
 
@@ -43,10 +81,22 @@ export async function updateAdminMember(
     `/api/admin/members/${id}`,
     payload
   );
+  if (res.data && res.data.status) {
+    if (payload.foto) {
+      setStoredMemberAvatar(id, payload.foto);
+    }
+    if (res.data.data) {
+      return {
+        ...res.data,
+        data: normalizeAdminMember(res.data.data),
+      };
+    }
+  }
   return res.data;
 }
 
 export async function deleteAdminMember(id: number): Promise<ApiResponse<null>> {
+  removeStoredMemberAvatar(id);
   const res = await apiClient.delete<ApiResponse<null>>(
     `/api/admin/members/${id}`
   );

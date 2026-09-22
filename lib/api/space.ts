@@ -7,6 +7,7 @@ import type {
   AvailabilityResult,
   BookedSlot,
 } from "@/lib/types/space";
+import { getStoredSpacePhoto, getImageUrl } from "@/lib/utils/format";
 
 function addHours(timeStr: string, hours: number): string {
   const [h, m] = timeStr.split(":").map(Number);
@@ -30,6 +31,9 @@ export type GetSpacesParams = {
 
 export function normalizeSpace(raw: any): Space {
   if (!raw) return raw;
+  const id = Number(raw.id);
+  const storedPhoto = getStoredSpacePhoto(id);
+  const photo = raw.foto || storedPhoto || null;
   const ownerName =
     raw.owner?.nama_coworking ||
     raw.coworking_space?.nama ||
@@ -38,14 +42,14 @@ export function normalizeSpace(raw: any): Space {
 
   return {
     ...raw,
-    id: Number(raw.id),
+    id,
     nama_space: raw.nama_space || raw.nama || `Space #${raw.id}`,
     tipe: (raw.tipe as SpaceType) || "desk",
     deskripsi: raw.deskripsi || "",
     kapasitas: Number(raw.kapasitas) || 1,
     harga_per_jam: Number(raw.harga_per_jam) || 0,
-    foto: raw.foto || null,
-    foto_url: raw.foto_url || null,
+    foto: photo,
+    foto_url: raw.foto_url || (photo ? getImageUrl(photo, "spaces") : null),
     owner: {
       ...(raw.owner || {}),
       nama_coworking: ownerName,

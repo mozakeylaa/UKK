@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { AUTH_TOKEN_KEY, AUTH_ROLE_KEY, AUTH_USER_KEY } from "@/lib/api/client";
 import type { LoginData, Role } from "@/lib/types/auth";
+import { getStoredMemberAvatar } from "@/lib/utils/format";
 
 type AuthUser = {
   id: number;
@@ -39,7 +40,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const raw = Cookies.get(AUTH_USER_KEY);
     if (raw) {
       try {
-        setUser(JSON.parse(raw));
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.role === "member") {
+          const stored = getStoredMemberAvatar(parsed.id);
+          if (stored) {
+            parsed.foto = stored;
+          }
+        }
+        setUser(parsed);
       } catch {
         setUser(null);
       }
@@ -53,10 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ? data.member?.nama_member ?? data.username
         : data.space_owner?.nama_pemilik ?? data.username;
 
+    const memberId = data.member?.id || data.id;
+    const stored = data.role === "member" ? getStoredMemberAvatar(memberId) : null;
+
     // Ambil foto profil dari member atau space_owner (cek foto_url, foto_profil, atau foto)
     const foto =
       data.role === "member"
-        ? data.member?.foto_url || data.member?.foto_profil || data.member?.foto || null
+        ? data.member?.foto_url || data.member?.foto_profil || data.member?.foto || stored || null
         : data.space_owner?.foto_url || data.space_owner?.foto_profil || data.space_owner?.foto || null;
 
     const authUser: AuthUser = {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, UserCog, AlertTriangle } from "lucide-react";
 import { getAdminMemberDetail, updateAdminMember } from "@/lib/api/admin-members";
 import { isApiSuccess } from "@/lib/types/api";
+import { getStoredMemberAvatar, setStoredMemberAvatar } from "@/lib/utils/format";
 import type { Member, UpdateMemberPayload } from "@/lib/types/member";
 import Spinner from "@/components/ui/Spinner";
 import MemberForm, { MemberFormData } from "@/components/admin/members/MemberForm";
@@ -58,6 +59,9 @@ export default function EditMemberPage() {
     try {
       const res = await updateAdminMember(memberId, payload);
       if (isApiSuccess(res)) {
+        if (data.foto) {
+          setStoredMemberAvatar(memberId, data.foto);
+        }
         router.push("/admin/members");
       } else {
         setError(res.message);
@@ -135,7 +139,7 @@ export default function EditMemberPage() {
             instansi: member.instansi,
             alamat: member.alamat,
             telp: member.telp,
-            foto: member.foto || undefined,
+            foto: member.foto || getStoredMemberAvatar(member.id) || undefined,
           }}
           isEditMode
           onSubmit={handleSubmit}
