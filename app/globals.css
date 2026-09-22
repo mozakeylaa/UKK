@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
@@ -66,6 +70,26 @@ body {
     radial-gradient(55% 50% at 85% -10%, rgba(132,148,255,.5), transparent 60%),
     radial-gradient(40% 35% at 5% 10%, rgba(255,219,253,.2), transparent 60%),
     linear-gradient(160deg, #12132E 0%, #1B1E52 35%, #3B3FC4 150%);
+}
+
+/* Keyframes Ticker Bergerak ke Arah Kanan */
+@keyframes marqueeRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marqueeRight 28s linear infinite;
+}
+
+.animate-marquee-right:hover {
+  animation-play-state: paused;
 }
 
 @keyframes fadeUp {

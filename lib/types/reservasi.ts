@@ -7,6 +7,14 @@ export type Diskon = {
   persentase_diskon: number;
   tanggal_awal: string;
   tanggal_akhir: string;
+  kode_diskon?: string;
+  nama?: string;
+  persentase?: number;
+  tanggal_mulai?: string;
+  tanggal_berakhir?: string;
+  periode?: string;
+  status?: string;
+  is_active?: boolean;
 };
 
 export type CreateDiskonPayload = {
