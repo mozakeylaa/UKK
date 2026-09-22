@@ -135,6 +135,19 @@ export function getMemberAvatarUrl(member?: {
     return resolved;
   }
 
+  // Cek hybrid persistence di localStorage HANYA untuk member ID yang spesifik
+  if (typeof window !== "undefined" && member.id) {
+    try {
+      const stored = localStorage.getItem(`coworking_member_avatar_${member.id}`);
+      if (stored) {
+        const resolvedStored = getImageUrl(stored, "members");
+        if (resolvedStored) return resolvedStored;
+      }
+    } catch {
+      // localStorage tidak tersedia
+    }
+  }
+
   const hashVal = typeof member.id === "number"
     ? member.id
     : ((member.nama_member?.length ?? 0) + (member.username?.length ?? 0));

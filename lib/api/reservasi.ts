@@ -46,7 +46,7 @@ export async function getMyReservasi(): Promise<ApiResponse<Reservasi[]>> {
   if (isApiSuccess(res.data) && Array.isArray(res.data.data)) {
     return {
       ...res.data,
-      data: res.data.data.map(normalizeReservasi),
+      data: res.data.data.map(normalizeReservasi).sort((a, b) => b.id - a.id),
     };
   }
   return res.data;

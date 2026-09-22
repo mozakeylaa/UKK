@@ -1,4 +1,5 @@
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
@@ -23,6 +24,8 @@ export default function LoginFormFields({
   onChangePassword,
   onSubmit,
 }: LoginFormFieldsProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <Input
@@ -31,13 +34,24 @@ export default function LoginFormFields({
         onChange={(e) => onChangeUsername(e.target.value)}
         error={errors.username}
       />
-      <Input
-        label="Password"
-        type="password"
-        value={password}
-        onChange={(e) => onChangePassword(e.target.value)}
-        error={errors.password}
-      />
+      <div className="relative">
+        <Input
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(e) => onChangePassword(e.target.value)}
+          error={errors.password}
+          className="pr-11"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          aria-label={showPassword ? "Sembunyikan password" : "Lihat password"}
+          className="absolute right-3.5 top-[38px] text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
 
       {serverError && <p className="text-sm text-status-cancelled">{serverError}</p>}
 

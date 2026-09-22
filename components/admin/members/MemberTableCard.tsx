@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { Member } from "@/lib/types/member";
-import { getMemberAvatarUrl } from "@/lib/utils/format";
+import { getImageUrl, getMemberAvatarUrl } from "@/lib/utils/format";
 import Button from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import Table from "@/components/ui/Table";
@@ -21,6 +21,76 @@ function getUsername(member: any): string {
   if (member?.users?.username) return member.users.username;
   if (member?.email) return member.email.split("@")[0];
   return "-";
+}
+
+function getMemberPhotoUrl(member: Member): string | null {
+  const candidate = member.foto || member.foto_url;
+  const resolved = getImageUrl(candidate, "members");
+  if (resolved) return resolved;
+
+  if (typeof window !== "undefined" && member.id) {
+    try {
+      const stored = localStorage.getItem(`coworking_member_avatar_${member.id}`);
+      if (stored) return getImageUrl(stored, "members");
+    } catch {
+      // ignore
+    }
+  }
+
+  return null;
+}
+
+function MemberAvatarCell({ member }: { member: Member }) {
+  const photo = getMemberPhotoUrl(member);
+  const initial = (member.nama_member || "M").trim().charAt(0).toUpperCase();
+
+  // Variasi warna gradien berdasarkan nama member agar setiap member punya warna khas
+  const colorGradients = [
+    "from-[#6367FF] to-[#8494FF]",
+    "from-[#FF5DA2] to-[#FF8FC2]",
+    "from-[#0EA5E9] to-[#38BDF8]",
+    "from-[#10B981] to-[#34D399]",
+    "from-[#8B5CF6] to-[#A78BFA]",
+    "from-[#F59E0B] to-[#FBBF24]",
+  ];
+  const colorIdx = Math.abs(
+    (member.id ?? 0) + (member.nama_member?.length ?? 0)
+  ) % colorGradients.length;
+  const gradient = colorGradients[colorIdx];
+
+  return (
+    <div className="flex items-center gap-3">
+      {photo ? (
+        <img
+          src={photo}
+          alt={member.nama_member}
+          className="h-9 w-9 shrink-0 rounded-full object-cover border border-slate-200 shadow-xs"
+          onError={(e) => {
+            (e.currentTarget as HTMLElement).style.display = "none";
+            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+            if (fallback) fallback.style.display = "flex";
+          }}
+        />
+      ) : null}
+
+      <div
+        className={`h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-white text-xs font-bold shadow-xs ${
+          photo ? "hidden" : "flex"
+        }`}
+      >
+        {initial}
+      </div>
+
+      <div className="flex flex-col min-w-0">
+        <span className="font-semibold text-xs sm:text-sm text-slate-900 truncate">
+          {member.nama_member}
+        </span>
+        <span className="text-[11px] text-slate-400 truncate">
+          @{member.username || `user_${member.id}`}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function MemberTableCard({
@@ -59,19 +129,7 @@ export default function MemberTableCard({
             >
               {/* Header Card: Avatar & Nama & Username */}
               <div className="flex items-center gap-3">
-                <img
-                  src={getMemberAvatarUrl(member)}
-                  alt={nama}
-                  className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover border border-slate-200 shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-semibold text-ink-950 text-sm truncate">
-                    {nama}
-                  </h4>
-                  <p className="text-xs text-ink-600 truncate">
-                    @{uname}
-                  </p>
-                </div>
+                <MemberAvatarCell member={member} />
               </div>
 
               {/* Detail Info: Instansi & Telepon */}
@@ -92,10 +150,11 @@ export default function MemberTableCard({
 
               {/* Action Buttons: Langsung Kelihatan di Layar HP */}
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-surface-200/60">
-                <Link href={`/admin/members/${member.id}/edit`}>
-                  <Button variant="outline" size="sm" type="button">
-                    Edit
-                  </Button>
+                <Link
+                  href={`/admin/members/${member.id}/edit`}
+                  className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-[#6367FF] hover:text-[#6367FF] transition-all"
+                >
+                  Edit
                 </Link>
                 <Button
                   variant="danger"
@@ -118,36 +177,42 @@ export default function MemberTableCard({
         <Table<Member>
           columns={[
             {
-              header: "Username",
+              header: "Nama Member",
+              accessor: (row) => <MemberAvatarCell member={row} />,
+            },
+            {
+              header: "Instansi",
               accessor: (row) => (
-                <span className="font-mono text-xs text-ink-600">
-                  @{getUsername(row)}
+                <span className="text-xs text-slate-600 font-medium">
+                  {row.instansi || "-"}
                 </span>
               ),
             },
             {
-              header: "Nama",
+              header: "Telepon",
               accessor: (row) => (
-                <div className="flex items-center gap-3">
-                  <img
-                    src={getMemberAvatarUrl(row)}
-                    alt={row.nama_member}
-                    className="h-8 w-8 rounded-full object-cover border border-slate-200 shrink-0"
-                  />
-                  <span className="font-medium text-ink-950">{row.nama_member}</span>
-                </div>
+                <span className="text-xs text-slate-600 font-mono">
+                  {row.telp || "-"}
+                </span>
               ),
             },
-            { header: "Instansi", accessor: (row) => row.instansi || "-" },
-            { header: "Telepon", accessor: (row) => row.telp || "-" },
+            {
+              header: "Alamat",
+              accessor: (row) => (
+                <span className="text-xs text-slate-500 truncate max-w-[200px] block">
+                  {row.alamat || "-"}
+                </span>
+              ),
+            },
             {
               header: "Aksi",
               accessor: (row) => (
                 <div className="flex items-center gap-2">
-                  <Link href={`/admin/members/${row.id}/edit`}>
-                    <Button variant="outline" size="sm" type="button">
-                      Edit
-                    </Button>
+                  <Link
+                    href={`/admin/members/${row.id}/edit`}
+                    className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 hover:border-[#6367FF] hover:text-[#6367FF] transition-all"
+                  >
+                    Edit
                   </Link>
                   <Button
                     variant="danger"

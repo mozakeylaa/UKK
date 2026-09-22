@@ -87,7 +87,10 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({
         status: true,
         message: updateRes.data?.message || "Profil berhasil diperbarui",
-        data: updateRes.data?.data,
+        data: {
+          ...updateRes.data?.data,
+          foto: updatePayload.foto ?? updateRes.data?.data?.foto ?? null,
+        },
       });
     }
 

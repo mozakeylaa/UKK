@@ -36,12 +36,21 @@ export async function getAdminReservasiList(
   const cleanedParams = cleanAdminFilter(filter);
   const res = await apiClient.get<ApiResponse<Reservasi[]>>(
     "/api/admin/reservasi",
-    { params: cleanedParams }
+    {
+      params: {
+        ...cleanedParams,
+        _t: Date.now(),
+      },
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
+    }
   );
   if (isApiSuccess(res.data) && Array.isArray(res.data.data)) {
     return {
       ...res.data,
-      data: res.data.data.map(normalizeReservasi),
+      data: res.data.data.map(normalizeReservasi).sort((a, b) => b.id - a.id),
     };
   }
   return res.data;

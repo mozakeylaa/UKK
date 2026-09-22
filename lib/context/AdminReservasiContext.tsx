@@ -76,7 +76,24 @@ export function AdminReservasiProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshCount();
-  }, [refreshCount, pathname]);
+
+    const interval = setInterval(() => {
+      refreshCount();
+    }, 30000);
+
+    const handleFocus = () => {
+      refreshCount();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, [refreshCount]);
 
   return (
     <AdminReservasiContext.Provider
