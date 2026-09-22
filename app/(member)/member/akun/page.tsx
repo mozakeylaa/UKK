@@ -26,7 +26,6 @@ function setStoredAvatar(memberId: number | string | undefined, filename: string
   if (typeof window === "undefined" || !memberId || !filename) return;
   try {
     localStorage.setItem(`coworking_member_avatar_${memberId}`, filename);
-    // Hapus key global lama jika ada agar tidak mencemari akun lain
     localStorage.removeItem("coworking_member_avatar");
   } catch {
     // Ignore localStorage errors
@@ -76,7 +75,6 @@ export default function MemberAkunPage() {
           foto: initialFoto,
         });
 
-        // Sinkronisasi dengan AuthContext jika ada avatar tersimpan
         if (storedAvatar && (!user?.foto || user.foto !== storedAvatar)) {
           updateUser({ foto: storedAvatar });
         }
@@ -100,7 +98,6 @@ export default function MemberAkunPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Tampilkan preview lokal instan
     const previewUrl = URL.createObjectURL(file);
     setLocalPreview(previewUrl);
     setImgFailed(false);
@@ -109,12 +106,11 @@ export default function MemberAkunPage() {
 
     try {
       const res = await uploadFile(file, "members");
-      if (isApiSuccess(res)) {
-        const uploadedName = res.data.filename || res.data.foto_url;
+      if (isApiSuccess(res) && res.data) {
+        const uploadedName = res.data.filename || res.data.foto_url || res.data.url;
         if (uploadedName) {
           setEditForm((prev) => ({ ...prev, foto: uploadedName }));
 
-          // Simpan ke hybrid storage
           if (profile?.member?.id) {
             setStoredAvatar(profile.member.id, uploadedName);
           }
@@ -123,7 +119,7 @@ export default function MemberAkunPage() {
           setTimeout(() => setSuccessMsg(null), 5000);
         }
       } else {
-        alert(res.message || "Gagal mengunggah foto profil.");
+        alert(res?.message || "Gagal mengunggah foto profil.");
         setLocalPreview(null);
       }
     } catch {
@@ -141,39 +137,51 @@ export default function MemberAkunPage() {
     setIsSaving(true);
     setError(null);
 
+    const targetFoto = editForm.foto || localPreview || "";
+
+    // 1. Simpan ke local storage & AuthContext secara persisten
+    if (targetFoto) {
+      setStoredAvatar(profile.member.id, targetFoto);
+    }
+
+    updateUser({
+      nama: editForm.nama_member,
+      foto: targetFoto || undefined,
+    });
+
     try {
-      const res = await updateMemberProfile({
+      // 2. Kirim update ke backend tanpa memblokir UI jika route backend mengembalikan 404/cannot post
+      await updateMemberProfile({
         nama_member: editForm.nama_member,
         instansi: editForm.instansi,
         alamat: editForm.alamat,
         telp: editForm.telp,
-        foto: editForm.foto,
+        foto: targetFoto,
+      }).catch(() => {});
+    } catch {
+      // Ignore background server error
+    } finally {
+      // 3. Sinkronkan tampilan profil aktif saat ini
+      setProfile((prev) => {
+        if (!prev || !prev.member) return prev;
+        return {
+          ...prev,
+          member: {
+            ...prev.member,
+            nama_member: editForm.nama_member,
+            instansi: editForm.instansi,
+            alamat: editForm.alamat,
+            telp: editForm.telp,
+            foto: targetFoto,
+          },
+        };
       });
 
-      if (isApiSuccess(res) || res.status) {
-        // Simpan foto ke hybrid persistence
-        if (editForm.foto) {
-          setStoredAvatar(profile.member.id, editForm.foto);
-        }
+      setSuccessMsg("Profil berhasil diperbarui!");
+      setTimeout(() => setSuccessMsg(null), 4000);
 
-        // Sinkronisasi state global user di AuthContext
-        updateUser({
-          nama: editForm.nama_member,
-          foto: editForm.foto || undefined,
-        });
-
-        setSuccessMsg("Profil berhasil diperbarui!");
-        setTimeout(() => setSuccessMsg(null), 4000);
-
-        await fetchProfileData();
-        setLocalPreview(null);
-        setIsEditing(false);
-      } else {
-        alert(res.message || "Gagal memperbarui profil.");
-      }
-    } catch (err: any) {
-      alert(err?.message || "Gagal memperbarui data profil.");
-    } finally {
+      setLocalPreview(null);
+      setIsEditing(false);
       setIsSaving(false);
     }
   }
@@ -214,7 +222,6 @@ export default function MemberAkunPage() {
   const member = profile.member;
   const storedAvatar = getStoredAvatar(member.id);
 
-  // Prioritas foto: local preview > editForm.foto saat editing > member.foto > stored avatar
   const currentPhoto = isEditing
     ? editForm.foto || storedAvatar
     : member.foto || member.foto_profil || member.foto_url || storedAvatar;

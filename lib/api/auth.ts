@@ -68,12 +68,28 @@ export interface UpdateMemberProfilePayload {
 export async function updateMemberProfile(
   payload: UpdateMemberProfilePayload
 ): Promise<ApiResponse<MemberProfile>> {
-  const res = await fetch("/api/member/profile", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  return res.json();
+  try {
+    const res = await apiClient.post<ApiResponse<MemberProfile>>(
+      "/api/member/profile",
+      payload
+    );
+    return res.data;
+  } catch (err: any) {
+    if (err?.response?.status === 404) {
+      try {
+        const fallbackRes = await apiClient.post<ApiResponse<MemberProfile>>(
+          "/api/profile",
+          payload
+        );
+        return fallbackRes.data;
+      } catch {
+        const patchRes = await apiClient.patch<ApiResponse<MemberProfile>>(
+          "/api/member/profile",
+          payload
+        );
+        return patchRes.data;
+      }
+    }
+    throw err;
+  }
 }
