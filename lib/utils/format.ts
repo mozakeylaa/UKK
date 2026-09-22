@@ -148,6 +148,33 @@ export function removeStoredMemberAvatar(memberId: number | string | undefined) 
   }
 }
 
+export function getStoredAdminAvatar(adminId?: number | string | null): string | null {
+  if (typeof window === "undefined" || !adminId) return null;
+  try {
+    return localStorage.getItem(`coworking_admin_avatar_${adminId}`);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredAdminAvatar(adminId: number | string | undefined, filenameOrUrl: string) {
+  if (typeof window === "undefined" || !adminId || !filenameOrUrl) return;
+  try {
+    localStorage.setItem(`coworking_admin_avatar_${adminId}`, filenameOrUrl);
+  } catch {
+    // ignore
+  }
+}
+
+export function removeStoredAdminAvatar(adminId: number | string | undefined) {
+  if (typeof window === "undefined" || !adminId) return;
+  try {
+    localStorage.removeItem(`coworking_admin_avatar_${adminId}`);
+  } catch {
+    // ignore
+  }
+}
+
 export function getSpaceImageUrl(space?: {
   id?: number;
   foto?: string | null;
@@ -198,9 +225,9 @@ export function getMemberAvatarUrl(member?: {
     return resolved;
   }
 
-  // Cek custom avatar di penyimpanan persisten untuk member ID yang spesifik
+  // Cek custom avatar di penyimpanan persisten untuk member ID atau admin ID yang spesifik
   if (member.id) {
-    const custom = getStoredMemberAvatar(member.id);
+    const custom = getStoredMemberAvatar(member.id) || getStoredAdminAvatar(member.id);
     if (custom) {
       const resolvedCustom = getImageUrl(custom, "members");
       if (resolvedCustom) return resolvedCustom;
@@ -213,3 +240,5 @@ export function getMemberAvatarUrl(member?: {
   const index = Math.abs(hashVal % DEFAULT_MEMBER_AVATARS.length);
   return DEFAULT_MEMBER_AVATARS[index];
 }
+
+export const getAdminAvatarUrl = getMemberAvatarUrl;

@@ -8,6 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import AdminProfileForm, {
   AdminProfileData,
 } from "@/components/admin/profil/AdminProfileForm";
+import AdminAvatarCard from "@/components/admin/profil/AdminAvatarCard";
 
 export default function AdminProfilPage() {
   const [profileData, setProfileData] = useState<AdminProfileData | null>(null);
@@ -66,10 +67,10 @@ export default function AdminProfilPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            Profil Lokasi
+            Profil Pengelola & Lokasi
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500">
-            Kelola nama coworking space, identitas pengelola/pemilik, dan nomor kontak resmi.
+            Kelola foto profil akun pengelola, nama coworking space, dan nomor kontak resmi.
           </p>
         </div>
 
@@ -86,9 +87,25 @@ export default function AdminProfilPage() {
         </div>
       )}
 
+      {/* Avatar & Identitas Admin Card */}
+      {profileData && (
+        <AdminAvatarCard
+          namaPemilik={profileData.nama_pemilik}
+          namaCoworking={profileData.nama_coworking}
+        />
+      )}
+
       {/* Main Profile Form Card */}
       {profileData && (
         <div className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-100 shadow-xl shadow-slate-900/5">
+          <div className="mb-5 pb-4 border-b border-slate-100">
+            <h2 className="text-base font-bold text-slate-900">
+              Informasi Coworking Space
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Data usaha dan kontak yang ditampilkan pada tiket digital member.
+            </p>
+          </div>
           <AdminProfileForm
             initialData={profileData}
             onSubmit={handleSubmit}
